@@ -4,21 +4,28 @@ import 'package:http/http.dart' as http;
 
 import 'types.dart';
 
-const _defaultBaseUrl = 'https://api.protegey.com';
-
 /// Thin HTTP wrapper shared by every SDK module — one place that knows about auth, base URL and
 /// error shape. Accepts an injectable [http.Client] so tests can use `http.testing.MockClient`
 /// without a real network call.
+///
+/// [baseUrl] is deliberately required, with NO built-in default: this SDK ships inside partner
+/// apps (especially mobile), which can't be force-updated the moment Protegey's own production
+/// domain changes. Baking in a guess now would risk every already-shipped app silently talking to
+/// a stale/wrong host later — requiring it here means the value only ever needs updating in the
+/// caller's own config, never in this package.
 class ProtegeyHttpClient {
   final String apiKey;
   final String baseUrl;
   final http.Client _httpClient;
 
-  ProtegeyHttpClient(this.apiKey, {String? baseUrl, http.Client? httpClient})
-      : baseUrl = _stripTrailingSlash(baseUrl ?? _defaultBaseUrl),
+  ProtegeyHttpClient(this.apiKey, {required String baseUrl, http.Client? httpClient})
+      : baseUrl = _stripTrailingSlash(baseUrl),
         _httpClient = httpClient ?? http.Client() {
     if (apiKey.isEmpty) {
       throw ArgumentError('Protegey: apiKey is required');
+    }
+    if (baseUrl.isEmpty) {
+      throw ArgumentError('Protegey: baseUrl is required — point it at your Protegey API environment (e.g. https://api.protegey.com)');
     }
   }
 
