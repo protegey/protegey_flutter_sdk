@@ -1,0 +1,65 @@
+# protegey_sdk
+
+Official Protegey SDK for Flutter. Device intelligence and transaction reporting, called directly from your app with your own API key.
+
+## Install
+
+```yaml
+dependencies:
+  protegey_sdk: ^0.1.0
+```
+
+## Usage
+
+```dart
+import 'package:protegey_sdk/protegey_sdk.dart';
+
+final protegey = Protegey(apiKey: 'YOUR_API_KEY');
+
+// Device intelligence — call on login / session start.
+// Computes a real, stable per-device fingerprint on Android/iOS via device_info_plus.
+final identify = await protegey.device.identify(
+  externalCustomerId: 'cust-9981',
+  phoneNumber: '+22890000001', // optional — you already have it, never read off the device
+);
+
+// Transactions
+final result = await protegey.transactions.report(TransactionInput(
+  externalTransactionId: 'tx-00234',
+  externalCustomerId: 'cust-9981',
+  direction: TransactionDirection.debit,
+  amount: 250000,
+  currency: 'XOF',
+  transactionType: 'cashout',
+  isCash: true,
+  visitorId: identify.visitorId, // fold the same device signal into this transaction's decision
+));
+```
+
+## Device attributes
+
+`device.identify()` uses only policy-safe, non-hardware identifiers — Android ID (Android) /
+`identifierForVendor` (iOS), never IMEI/UDID/serial — per Apple/Google platform policy and
+GDPR/CPRA. On any other platform (desktop, unsupported), there's no reliable stable id available
+through `device_info_plus`; pass your own via `visitorId` if you need one.
+
+**Known v1 limitation**: root/jailbreak detection (`isRooted`) is not implemented yet —
+`device_info_plus` only exposes `isPhysicalDevice` (used for `isEmulator`), not root status. A
+future release will add it via a dedicated detection package once one is evaluated and verified.
+
+## Development
+
+This repo uses [fvm](https://fvm.app) to pin the Flutter version — see `.fvmrc`.
+
+```bash
+fvm flutter pub get
+fvm flutter analyze
+fvm flutter test
+```
+
+## Security note
+
+Your API key is used directly from your app — the same key your backend would otherwise use
+server-side. Keep it out of source control and public repos the same way you would any other
+secret. Protegey does not perform request rate-limiting or origin/bundle-id allowlisting on your
+behalf today.
