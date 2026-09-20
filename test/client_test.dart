@@ -9,7 +9,11 @@ import 'package:protegey_sdk/src/types.dart';
 void main() {
   group('ProtegeyHttpClient', () {
     test('throws when constructed without an apiKey', () {
-      expect(() => ProtegeyHttpClient(''), throwsArgumentError);
+      expect(() => ProtegeyHttpClient('', baseUrl: 'https://api.example.com'), throwsArgumentError);
+    });
+
+    test('throws when constructed without a baseUrl — no silent default, ever', () {
+      expect(() => ProtegeyHttpClient('key', baseUrl: ''), throwsArgumentError);
     });
 
     test('sends the api key as the x-api-key header', () async {
@@ -44,7 +48,7 @@ void main() {
         return http.Response(jsonEncode({'message': 'Insufficient permissions'}), 403);
       });
 
-      final client = ProtegeyHttpClient('key', httpClient: mock);
+      final client = ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock);
       expect(
         () => client.post('/foo', {}),
         throwsA(isA<ProtegeyApiException>().having((e) => e.status, 'status', 403).having((e) => e.message, 'message', 'Insufficient permissions')),
@@ -61,7 +65,7 @@ void main() {
         );
       });
 
-      final client = ProtegeyHttpClient('key', httpClient: mock);
+      final client = ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock);
       expect(
         () => client.post('/foo', {}),
         throwsA(isA<ProtegeyApiException>().having((e) => e.message, 'message', 'amount must be positive, currency required')),
@@ -73,7 +77,7 @@ void main() {
         return http.Response('not json', 500, reasonPhrase: 'Internal Server Error');
       });
 
-      final client = ProtegeyHttpClient('key', httpClient: mock);
+      final client = ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock);
       expect(
         () => client.post('/foo', {}),
         throwsA(isA<ProtegeyApiException>().having((e) => e.message, 'message', 'Internal Server Error')),

@@ -17,7 +17,7 @@ void main() {
         captured = request;
         return http.Response(jsonEncode(_successBody), 200);
       });
-      final device = DeviceModule(ProtegeyHttpClient('key', httpClient: mock));
+      final device = DeviceModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
 
       final result = await device.identify(visitorId: 'my-own-stable-id', externalCustomerId: 'cust-1');
 
@@ -33,7 +33,7 @@ void main() {
         captured = request;
         return http.Response(jsonEncode(_successBody), 200);
       });
-      final device = DeviceModule(ProtegeyHttpClient('key', httpClient: mock));
+      final device = DeviceModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
 
       final result = await device.identify();
 
@@ -48,7 +48,7 @@ void main() {
         captured = request;
         return http.Response(jsonEncode(_successBody), 200);
       });
-      final device = DeviceModule(ProtegeyHttpClient('key', httpClient: mock));
+      final device = DeviceModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
 
       await device.identify(visitorId: 'v1', deviceAttributes: const DeviceAttributes(isRooted: true));
 
@@ -62,7 +62,7 @@ void main() {
         captured = request;
         return http.Response(jsonEncode(_successBody), 200);
       });
-      final device = DeviceModule(ProtegeyHttpClient('key', httpClient: mock));
+      final device = DeviceModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
 
       await device.identify(visitorId: 'v1', phoneNumber: '+22890000001');
 
@@ -76,7 +76,7 @@ void main() {
         captured = request;
         return http.Response(jsonEncode(_successBody), 200);
       });
-      final device = DeviceModule(ProtegeyHttpClient('key', httpClient: mock));
+      final device = DeviceModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
 
       await device.identify(visitorId: 'v1', eventId: 'my-idempotency-key');
 
@@ -86,7 +86,7 @@ void main() {
 
     test('parses the backend action into the DeviceAction enum', () async {
       final mock = MockClient((request) async => http.Response(jsonEncode({'recorded': true, 'action': 'soft_challenge', 'riskScore': 15}), 200));
-      final device = DeviceModule(ProtegeyHttpClient('key', httpClient: mock));
+      final device = DeviceModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
 
       final result = await device.identify(visitorId: 'v1');
 

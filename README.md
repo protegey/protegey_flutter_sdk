@@ -4,17 +4,31 @@ Official Protegey SDK for Flutter. Device intelligence and transaction reporting
 
 ## Install
 
+Not yet published to pub.dev — install directly from GitHub for now:
+
+```yaml
+dependencies:
+  protegey_sdk:
+    git:
+      url: https://github.com/protegey/protegey_flutter_sdk.git
+      ref: main # or pin a tag once one exists, e.g. v0.1.0
+```
+
+Once published, this becomes:
+
 ```yaml
 dependencies:
   protegey_sdk: ^0.1.0
 ```
+
+Source: [github.com/protegey/protegey_flutter_sdk](https://github.com/protegey/protegey_flutter_sdk)
 
 ## Usage
 
 ```dart
 import 'package:protegey_sdk/protegey_sdk.dart';
 
-final protegey = Protegey(apiKey: 'YOUR_API_KEY');
+final protegey = Protegey(apiKey: 'YOUR_API_KEY', baseUrl: 'https://api.protegey.com');
 
 // Device intelligence — call on login / session start.
 // Computes a real, stable per-device fingerprint on Android/iOS via device_info_plus.
@@ -35,6 +49,13 @@ final result = await protegey.transactions.report(TransactionInput(
   visitorId: identify.visitorId, // fold the same device signal into this transaction's decision
 ));
 ```
+
+## `baseUrl` — no default, on purpose
+
+This package ships inside apps that can't be force-updated the moment Protegey's own API domain
+changes. Baking in a guess would risk every already-shipped app silently talking to a stale host
+later — so `baseUrl` is required, with no fallback. Confirm the current value with Protegey before
+you ship (it can differ between environments and change independently of this package's version).
 
 ## Device attributes
 

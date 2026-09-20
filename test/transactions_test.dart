@@ -36,7 +36,7 @@ void main() {
         captured = request;
         return http.Response(jsonEncode(_successBody), 200);
       });
-      final transactions = TransactionsModule(ProtegeyHttpClient('key', httpClient: mock));
+      final transactions = TransactionsModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
 
       await transactions.report(_baseInput());
 
@@ -54,7 +54,7 @@ void main() {
         captured = request;
         return http.Response(jsonEncode(_successBody), 200);
       });
-      final transactions = TransactionsModule(ProtegeyHttpClient('key', httpClient: mock));
+      final transactions = TransactionsModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
 
       await transactions.report(_baseInput());
 
@@ -68,7 +68,7 @@ void main() {
         captured = request;
         return http.Response(jsonEncode(_successBody), 200);
       });
-      final transactions = TransactionsModule(ProtegeyHttpClient('key', httpClient: mock));
+      final transactions = TransactionsModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
 
       final fixed = DateTime.utc(2026, 1, 1);
       await transactions.report(_baseInput(occurredAt: fixed));
@@ -83,7 +83,7 @@ void main() {
         captured = request;
         return http.Response(jsonEncode(_successBody), 200);
       });
-      final transactions = TransactionsModule(ProtegeyHttpClient('key', httpClient: mock));
+      final transactions = TransactionsModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
 
       await transactions.report(_baseInput(visitorId: 'v1', deviceAttributes: const DeviceAttributes(isRooted: true)));
 
@@ -105,7 +105,7 @@ void main() {
             }),
             200,
           ));
-      final transactions = TransactionsModule(ProtegeyHttpClient('key', httpClient: mock));
+      final transactions = TransactionsModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
 
       final result = await transactions.report(_baseInput());
 
