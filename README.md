@@ -1,6 +1,6 @@
 # protegey_sdk
 
-Official Protegey SDK for Flutter. Device intelligence and transaction reporting, called directly from your app with your own API key.
+Official Protegey SDK for Flutter. Device intelligence, transaction reporting and identity verification, called directly from your app with your own API key.
 
 ## Install
 
@@ -48,6 +48,9 @@ final result = await protegey.transactions.report(TransactionInput(
   isCash: true,
   visitorId: identify.visitorId, // fold the same device signal into this transaction's decision
 ));
+
+// Identity verification — no manual API call needed, the SDK starts the session and hands back the link
+final session = await protegey.kyc.startSession(externalUserId: 'cust-9981');
 ```
 
 ## `baseUrl` — no default, on purpose

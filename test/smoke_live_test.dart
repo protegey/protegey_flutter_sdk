@@ -34,5 +34,10 @@ void main() {
     // ignore: avoid_print
     print('transactions.report(): transactionId=${tx.transactionId} decision=${tx.decision}');
     expect(tx.transactionId, isNotEmpty);
+
+    final kyc = await protegey.kyc.startSession(externalUserId: 'flutter-sdk-smoke-cust-1');
+    // ignore: avoid_print
+    print('kyc.startSession(): sessionId=${kyc.sessionId} url=${kyc.url}');
+    expect(kyc.sessionId, isNotEmpty);
   });
 }
