@@ -30,6 +30,22 @@ void main() {
       expect(captured!.headers.containsKey('Authorization'), isFalse);
     });
 
+    test('sends a GET request with the api key header and no body', () async {
+      http.Request? captured;
+      final mock = MockClient((request) async {
+        captured = request;
+        return http.Response(jsonEncode({'status': 'Approved'}), 200);
+      });
+
+      final client = ProtegeyHttpClient('secret-key', baseUrl: 'https://api.example.com', httpClient: mock);
+      final result = await client.get('/foo/bar');
+
+      expect(captured!.method, 'GET');
+      expect(captured!.url.toString(), 'https://api.example.com/foo/bar');
+      expect(captured!.headers['x-api-key'], 'secret-key');
+      expect(result, {'status': 'Approved'});
+    });
+
     test('strips a trailing slash from a custom baseUrl', () async {
       http.Request? captured;
       final mock = MockClient((request) async {

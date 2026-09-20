@@ -39,5 +39,14 @@ void main() {
     // ignore: avoid_print
     print('kyc.startSession(): sessionId=${kyc.sessionId} url=${kyc.url}');
     expect(kyc.sessionId, isNotEmpty);
+
+    final behavioral = await protegey.behavioral.report(const ReportBehavioralEventInput(
+      externalCustomerId: 'flutter-sdk-smoke-cust-1',
+      sessionId: 'flutter-sdk-smoke-sess-1',
+      keystroke: KeystrokeMetrics(avgInterKeyLatencyMs: 145, typingSpeedCharsPerSec: 4.2, errorRate: 0.02),
+    ));
+    // ignore: avoid_print
+    print('behavioral.report(): status=${behavioral.status} deviationScore=${behavioral.deviationScore}');
+    expect(behavioral.status, isNotEmpty);
   });
 }
