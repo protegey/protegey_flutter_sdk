@@ -40,7 +40,18 @@ class ProtegeyHttpClient {
       },
       body: jsonEncode(body),
     );
+    return _parseResponse(response);
+  }
 
+  Future<Map<String, dynamic>> get(String path) async {
+    final response = await _httpClient.get(
+      Uri.parse('$baseUrl$path'),
+      headers: {'x-api-key': apiKey},
+    );
+    return _parseResponse(response);
+  }
+
+  Map<String, dynamic> _parseResponse(http.Response response) {
     Map<String, dynamic>? data;
     try {
       final decoded = jsonDecode(response.body);

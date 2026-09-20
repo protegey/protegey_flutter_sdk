@@ -35,4 +35,38 @@ void main() {
       expect(result.url, 'https://verify.didit.me/session/abc');
     });
   });
+
+  group('KycModule.getSession', () {
+    test('GETs /partner-api/kyc/sessions/:sessionId — the webhook polling fallback', () async {
+      http.Request? captured;
+      final mock = MockClient((request) async {
+        captured = request;
+        return http.Response(
+          jsonEncode({'sessionId': 'sess_1', 'externalUserId': 'cust-1', 'status': 'Approved', 'decision': null}),
+          200,
+        );
+      });
+      final kyc = KycModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
+
+      final result = await kyc.getSession('sess_1');
+
+      expect(captured!.method, 'GET');
+      expect(captured!.url.toString(), 'https://api.example.com/partner-api/kyc/sessions/sess_1');
+      expect(result.status, 'Approved');
+      expect(result.externalUserId, 'cust-1');
+    });
+
+    test('URL-encodes the sessionId', () async {
+      http.Request? captured;
+      final mock = MockClient((request) async {
+        captured = request;
+        return http.Response(jsonEncode({'sessionId': 's', 'externalUserId': null, 'status': 'Not Started', 'decision': null}), 200);
+      });
+      final kyc = KycModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
+
+      await kyc.getSession('sess/with slash');
+
+      expect(captured!.url.toString(), 'https://api.example.com/partner-api/kyc/sessions/sess%2Fwith%20slash');
+    });
+  });
 }

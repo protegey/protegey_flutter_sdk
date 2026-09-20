@@ -1,6 +1,6 @@
 # protegey_sdk
 
-Official Protegey SDK for Flutter. Device intelligence, transaction reporting and identity verification, called directly from your app with your own API key.
+Official Protegey SDK for Flutter. Device intelligence, transaction reporting, identity verification and behavioral biometrics, called directly from your app with your own API key.
 
 ## Install
 
@@ -51,6 +51,21 @@ final result = await protegey.transactions.report(TransactionInput(
 
 // Identity verification — no manual API call needed, the SDK starts the session and hands back the link
 final session = await protegey.kyc.startSession(externalUserId: 'cust-9981');
+
+// Polling fallback — webhook delivery is best-effort (one retry, no queue), so use this if
+// you're not sure a delivery ever arrived, or just want to double-check a session's status.
+final current = await protegey.kyc.getSession(session.sessionId);
+
+// Behavioral biometrics — aggregated keystroke/touch/navigation metadata only, never raw content
+final behavioral = await protegey.behavioral.report(ReportBehavioralEventInput(
+  externalCustomerId: 'cust-9981',
+  sessionId: 'sess-20260115-01',
+  keystroke: const KeystrokeMetrics(avgInterKeyLatencyMs: 145, typingSpeedCharsPerSec: 4.2, errorRate: 0.02),
+  touch: const TouchMetrics(avgSwipeVelocity: 22, scrollBehaviorScore: 0.8),
+  navigation: const NavigationMetrics(screenSequence: ['login', 'dashboard', 'transfer', 'confirm']),
+));
+// behavioral.status == 'learning' for the first few sessions of any given customer — expected, not an error.
+// Once scored: behavioral.stepUpRecommended tells you whether to challenge this user yourself (OTP, biometric, ...).
 ```
 
 ## `baseUrl` — no default, on purpose
