@@ -82,9 +82,16 @@ you ship (it can differ between environments and change independently of this pa
 GDPR/CPRA. On any other platform (desktop, unsupported), there's no reliable stable id available
 through `device_info_plus`; pass your own via `visitorId` if you need one.
 
-**Known v1 limitation**: root/jailbreak detection (`isRooted`) is not implemented yet —
-`device_info_plus` only exposes `isPhysicalDevice` (used for `isEmulator`), not root status. A
-future release will add it via a dedicated detection package once one is evaluated and verified.
+**Tier 1/2 enrichment (2026-09-23)**: `isRooted` is now detected via `flutter_jailbreak_detection`
+(previously unimplemented — `device_info_plus` only exposes `isPhysicalDevice`, used for
+`isEmulator`). Also collected, all zero-extra-permission on both platforms: `manufacturer`,
+`connectionType`/`isVpnActive` (via `connectivity_plus`), `batteryLevel`/`isCharging` (via
+`battery_plus`). Deliberately NOT collected: mobile carrier/MCC-MNC (unreliable without a
+sensitive Android permission, heavily restricted on iOS), CPU/RAM/storage (no already-adopted,
+well-maintained plugin exposes them), GPS location, and the advertising identifier (IDFA/AAID) —
+the latter would require the iOS App Tracking Transparency prompt for no proportionate fraud-signal
+gain. Every enrichment call is independently best-effort: a plugin failure never breaks
+`identify()`, the field is just omitted.
 
 ## Development
 

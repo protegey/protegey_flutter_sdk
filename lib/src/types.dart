@@ -13,6 +13,24 @@ class DeviceAttributes {
   final bool? isRooted;
   final bool? isEmulator;
 
+  // ── Tier 1/2 enrichment (2026-09-23) — see fingerprint.dart for exactly which plugin backs
+  // each field and why cpuCores/totalMemory/storage were deliberately left out for now (no
+  // already-adopted plugin exposes them without pulling in an extra, less-maintained package).
+  final String? manufacturer;
+
+  /// Often fractional on real devices (e.g. 2.625, 3.5) — never assume an integer.
+  final double? devicePixelRatio;
+
+  /// "wifi" | "cellular" | "ethernet" | "vpn" | "none" | "unknown" — from connectivity_plus.
+  final String? connectionType;
+
+  /// True only when connectivity_plus itself reports the active transport as VPN — not a guess.
+  final bool? isVpnActive;
+
+  /// 0-100, from battery_plus.
+  final int? batteryLevel;
+  final bool? isCharging;
+
   const DeviceAttributes({
     this.platform,
     this.osVersion,
@@ -25,6 +43,12 @@ class DeviceAttributes {
     this.appVersion,
     this.isRooted,
     this.isEmulator,
+    this.manufacturer,
+    this.devicePixelRatio,
+    this.connectionType,
+    this.isVpnActive,
+    this.batteryLevel,
+    this.isCharging,
   });
 
   DeviceAttributes mergeOver(DeviceAttributes base) {
@@ -40,6 +64,12 @@ class DeviceAttributes {
       appVersion: appVersion ?? base.appVersion,
       isRooted: isRooted ?? base.isRooted,
       isEmulator: isEmulator ?? base.isEmulator,
+      manufacturer: manufacturer ?? base.manufacturer,
+      devicePixelRatio: devicePixelRatio ?? base.devicePixelRatio,
+      connectionType: connectionType ?? base.connectionType,
+      isVpnActive: isVpnActive ?? base.isVpnActive,
+      batteryLevel: batteryLevel ?? base.batteryLevel,
+      isCharging: isCharging ?? base.isCharging,
     );
   }
 
@@ -55,6 +85,12 @@ class DeviceAttributes {
         if (appVersion != null) 'appVersion': appVersion,
         if (isRooted != null) 'isRooted': isRooted,
         if (isEmulator != null) 'isEmulator': isEmulator,
+        if (manufacturer != null) 'manufacturer': manufacturer,
+        if (devicePixelRatio != null) 'devicePixelRatio': devicePixelRatio,
+        if (connectionType != null) 'connectionType': connectionType,
+        if (isVpnActive != null) 'isVpnActive': isVpnActive,
+        if (batteryLevel != null) 'batteryLevel': batteryLevel,
+        if (isCharging != null) 'isCharging': isCharging,
       };
 }
 
