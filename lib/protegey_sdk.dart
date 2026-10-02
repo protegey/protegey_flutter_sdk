@@ -27,8 +27,7 @@ export 'src/behavioral.dart'
 /// final protegey = Protegey(apiKey: 'YOUR_API_KEY', baseUrl: 'https://api.protegey.com');
 /// final identify = await protegey.device.identify(externalCustomerId: 'cust-1');
 /// await protegey.transactions.report(TransactionInput(...));
-/// final session = await protegey.kyc.startSession(externalUserId: 'cust-1');
-/// // Show it in-app without leaving your app — see ProtegeyKycView (kyc_webview.dart).
+/// final status = await protegey.kyc.presentVerification(context, externalUserId: 'cust-1');
 /// final behavioral = await protegey.behavioral.report(ReportBehavioralEventInput(
 ///   externalCustomerId: 'cust-1',
 ///   sessionId: 'sess-1',
