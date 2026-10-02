@@ -11,7 +11,8 @@ import 'src/kyc.dart';
 import 'src/transactions.dart';
 
 export 'src/types.dart';
-export 'src/kyc.dart' show StartKycSessionResult, KycSessionStatus;
+export 'src/kyc.dart' show KycModule, StartKycSessionResult, KycSessionStatus;
+export 'src/kyc_webview.dart' show ProtegeyKycView, ProtegeyKycPresentation;
 export 'src/behavioral.dart'
     show
         BehavioralConfidenceTier,
@@ -27,6 +28,7 @@ export 'src/behavioral.dart'
 /// final identify = await protegey.device.identify(externalCustomerId: 'cust-1');
 /// await protegey.transactions.report(TransactionInput(...));
 /// final session = await protegey.kyc.startSession(externalUserId: 'cust-1');
+/// // Show it in-app without leaving your app — see ProtegeyKycView (kyc_webview.dart).
 /// final behavioral = await protegey.behavioral.report(ReportBehavioralEventInput(
 ///   externalCustomerId: 'cust-1',
 ///   sessionId: 'sess-1',
