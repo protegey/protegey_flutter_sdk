@@ -1,3 +1,9 @@
+## 0.2.0
+
+- `ProtegeyKycView` — shows the hosted KYC flow in an in-app webview (`webview_flutter`) instead of
+  requiring you to open it yourself. Polls `kyc.getSession()` in the background and reports status
+  changes via `onStatusChange`; you decide when that means "close this view".
+
 ## 0.1.0
 
 - Initial release.

@@ -2,7 +2,7 @@ name: protegey_sdk
 description: >
   Official Protegey SDK for Flutter — device intelligence and transaction reporting,
   called directly from your app with your own API key.
-version: 0.1.0
+version: 0.2.0
 homepage: https://github.com/protegey/protegey-sdk-flutter
 publish_to: none # flip once ready to publish to pub.dev
 
@@ -14,6 +14,9 @@ dependencies:
   flutter:
     sdk: flutter
   http: '>=1.0.0 <2.0.0'
+  # In-app KYC webview (ProtegeyKycView, kyc_webview.dart) — lets the end user complete the
+  # Didit-hosted flow without ever leaving the partner's app.
+  webview_flutter: '>=4.0.0 <5.0.0'
   device_info_plus: '>=9.0.0 <12.0.0'
   crypto: '>=3.0.0 <4.0.0'
   uuid: '>=4.0.0 <5.0.0'

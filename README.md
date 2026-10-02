@@ -52,8 +52,20 @@ final result = await protegey.transactions.report(TransactionInput(
 // Identity verification — no manual API call needed, the SDK starts the session and hands back the link
 final session = await protegey.kyc.startSession(externalUserId: 'cust-9981');
 
+// Show it in-app — the user never leaves your app. Push this in a route/modal however you like;
+// it has no AppBar of its own, so you control the chrome (title, close button).
+Navigator.push(context, MaterialPageRoute(builder: (_) => ProtegeyKycView(
+  kyc: protegey.kyc,
+  sessionId: session.sessionId,
+  url: session.url,
+  onStatusChange: (status) {
+    if (status.status != 'pending') Navigator.pop(context); // or whatever "done" means for you
+  },
+)));
+
 // Polling fallback — webhook delivery is best-effort (one retry, no queue), so use this if
-// you're not sure a delivery ever arrived, or just want to double-check a session's status.
+// you're not sure a delivery ever arrived, or just want to double-check a session's status
+// outside of ProtegeyKycView (which already polls this internally while it's open).
 final current = await protegey.kyc.getSession(session.sessionId);
 
 // Behavioral biometrics — aggregated keystroke/touch/navigation metadata only, never raw content
