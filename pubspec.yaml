@@ -2,7 +2,7 @@ name: protegey_sdk
 description: >
   Official Protegey SDK for Flutter — device intelligence and transaction reporting,
   called directly from your app with your own API key.
-version: 0.2.0
+version: 0.2.1
 homepage: https://github.com/protegey/protegey-sdk-flutter
 publish_to: none # flip once ready to publish to pub.dev
 

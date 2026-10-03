@@ -1,3 +1,9 @@
+## 0.2.1
+
+- Fix: `presentVerification()`'s bottom sheet could cover 100% of the screen instead of the
+  intended ~80% on some Android devices (`FractionallySizedBox` inside `showModalBottomSheet` is
+  unreliable there) — now constrained via `showModalBottomSheet`'s own `constraints` parameter.
+
 ## 0.2.0
 
 - `ProtegeyKycView` — shows the hosted KYC flow in an in-app webview (`webview_flutter`) instead of
