@@ -83,11 +83,17 @@ extension ProtegeyKycPresentation on KycModule {
     KycSessionStatus? finalStatus;
 
     if (!context.mounted) return null;
+    // isScrollControlled alone doesn't reliably cap the sheet's height on every platform — on
+    // Android it was observed covering the full screen instead of leaving the app visible
+    // underneath. Setting `constraints` directly on the sheet (not just on a child widget) is the
+    // approach that holds across platforms.
+    final maxHeight = MediaQuery.of(context).size.height * 0.8;
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
+      constraints: BoxConstraints(maxHeight: maxHeight),
       builder: (sheetContext) => _ProtegeyKycSheet(
         kyc: this,
         sessionId: session.sessionId,
@@ -115,36 +121,33 @@ class _ProtegeyKycSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FractionallySizedBox(
-      heightFactor: 0.92,
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        child: Material(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          child: Column(
-            children: [
-              const SizedBox(height: 8),
-              Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(2)),
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      child: Material(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: Column(
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(2)),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+                  const Text('Verifying your identity…', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(width: 64), // balances the Close button so the title stays centered
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
-                    const Text('Verifying your identity…', style: TextStyle(fontWeight: FontWeight.w600)),
-                    const SizedBox(width: 64), // balances the Close button so the title stays centered
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ProtegeyKycView(kyc: kyc, sessionId: sessionId, url: url, onStatusChange: onStatusChange),
-              ),
-            ],
-          ),
+            ),
+            Expanded(
+              child: ProtegeyKycView(kyc: kyc, sessionId: sessionId, url: url, onStatusChange: onStatusChange),
+            ),
+          ],
         ),
       ),
     );
