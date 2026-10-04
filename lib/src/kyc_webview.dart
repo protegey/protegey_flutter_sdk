@@ -9,9 +9,10 @@ import 'kyc.dart';
 /// app. Didit is a third party Protegey doesn't control the completion redirect of, so this
 /// doesn't watch navigation: it polls [KycModule.getSession] in the background (the same
 /// best-effort polling fallback [KycModule] already documents) and reports every status change via
-/// [onStatusChange]. The host app decides what counts as "done" (e.g. the first non-"pending"
-/// status) and pops this view itself — it's a bare widget with no AppBar/Scaffold of its own, so
-/// the host controls its own chrome (title, close button, back behavior).
+/// [onStatusChange]. The host app decides what counts as "done" (e.g. the first terminal status —
+/// see [_terminalKycStatuses]) and pops this view itself — it's a bare widget with no
+/// AppBar/Scaffold of its own, so the host controls its own chrome (title, close button, back
+/// behavior).
 class ProtegeyKycView extends StatefulWidget {
   final KycModule kyc;
   final String sessionId;
@@ -43,6 +44,11 @@ class _ProtegeyKycViewState extends State<ProtegeyKycView> {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..loadRequest(Uri.parse(widget.url));
+    // Without this, webview_flutter silently DENIES every camera/microphone request from the
+    // page by default — the Didit/FaceTec capture flow then fails with its own "camera access
+    // denied" screen, which looks like a permission bug but is really just a missing grant here.
+    // Safe to auto-grant unconditionally: this controller only ever loads our own KYC session URL.
+    _controller.platform.setOnPlatformPermissionRequest((request) => request.grant());
     _pollTimer = Timer.periodic(widget.pollInterval, (_) => _poll());
   }
 
@@ -69,10 +75,16 @@ class _ProtegeyKycViewState extends State<ProtegeyKycView> {
   Widget build(BuildContext context) => WebViewWidget(controller: _controller);
 }
 
+/// Statuses where verification has genuinely concluded (one way or another) — every other known
+/// status ('Not Started', 'In Progress', 'Awaiting User', 'In Review', 'Resubmitted') means the
+/// user may still be actively completing the flow inside the webview, so the sheet must stay open.
+const _terminalKycStatuses = {'Approved', 'Declined', 'Abandoned', 'Expired', 'Kyc Expired'};
+
 /// The one-call integration: starts a session and shows it in a draggable bottom sheet — no UI
 /// code needed on your end. The sheet has a drag handle and a Close button (swipe down or tap it
-/// to back out at any point); it auto-dismisses itself on the first non-pending status. Returns
-/// that final status, or `null` if the user closed the sheet before one arrived.
+/// to back out at any point); it auto-dismisses itself once a terminal status (see
+/// [_terminalKycStatuses]) arrives. Returns that final status, or `null` if the user closed the
+/// sheet before one arrived.
 ///
 /// Prefer this for the common case. Reach for [ProtegeyKycView] directly only if you need a
 /// different presentation (e.g. a full page instead of a sheet) or want to drive the polling UI
@@ -100,7 +112,7 @@ extension ProtegeyKycPresentation on KycModule {
         url: session.url,
         onStatusChange: (status) {
           finalStatus = status;
-          if (status.status != 'pending' && status.status != 'Not Started') {
+          if (_terminalKycStatuses.contains(status.status)) {
             Navigator.pop(sheetContext); // done — closes the sheet on its own
           }
         },
