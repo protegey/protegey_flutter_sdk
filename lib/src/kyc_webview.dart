@@ -99,7 +99,7 @@ extension ProtegeyKycPresentation on KycModule {
     // Android it was observed covering the full screen instead of leaving the app visible
     // underneath. Setting `constraints` directly on the sheet (not just on a child widget) is the
     // approach that holds across platforms.
-    final maxHeight = MediaQuery.of(context).size.height * 0.8;
+    final maxHeight = MediaQuery.of(context).size.height * 0.95;
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
