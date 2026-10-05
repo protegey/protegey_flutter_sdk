@@ -77,14 +77,23 @@ class _ProtegeyKycViewState extends State<ProtegeyKycView> {
 
 /// Statuses where verification has genuinely concluded (one way or another) — every other known
 /// status ('Not Started', 'In Progress', 'Awaiting User', 'In Review', 'Resubmitted') means the
-/// user may still be actively completing the flow inside the webview, so the sheet must stay open.
+/// user may still be actively completing the flow inside the webview. Not used to auto-close the
+/// sheet below (see the note on [ProtegeyKycPresentation.presentVerification] for why) — kept here
+/// as a reference for host apps building a custom presentation around [ProtegeyKycView] directly.
 const _terminalKycStatuses = {'Approved', 'Declined', 'Abandoned', 'Expired', 'Kyc Expired'};
 
 /// The one-call integration: starts a session and shows it in a draggable bottom sheet — no UI
 /// code needed on your end. The sheet has a drag handle and a Close button (swipe down or tap it
-/// to back out at any point); it auto-dismisses itself once a terminal status (see
-/// [_terminalKycStatuses]) arrives. Returns that final status, or `null` if the user closed the
-/// sheet before one arrived.
+/// to back out at any point). Returns the last known status once the user closes the sheet
+/// themselves, or `null` if none ever arrived.
+///
+/// Deliberately does NOT auto-dismiss the instant a terminal status (see [_terminalKycStatuses])
+/// is polled: the webview itself shows its own result screen (pass/fail, a Fermer button) once the
+/// capture flow finishes, and that status flip is what the page's own submission just caused — a
+/// background poll tick can notice it and the host would then be racing its own page to close the
+/// sheet, sometimes winning and closing it before the user ever sees that screen. Closing stays a
+/// user action (the Close button here, or the webview's own Fermer button once its host wires one
+/// up to actually dismiss the sheet rather than just attempting window.close()).
 ///
 /// Prefer this for the common case. Reach for [ProtegeyKycView] directly only if you need a
 /// different presentation (e.g. a full page instead of a sheet) or want to drive the polling UI
@@ -112,9 +121,6 @@ extension ProtegeyKycPresentation on KycModule {
         url: session.url,
         onStatusChange: (status) {
           finalStatus = status;
-          if (_terminalKycStatuses.contains(status.status)) {
-            Navigator.pop(sheetContext); // done — closes the sheet on its own
-          }
         },
       ),
     );
