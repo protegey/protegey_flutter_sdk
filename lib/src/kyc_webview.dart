@@ -77,23 +77,26 @@ class _ProtegeyKycViewState extends State<ProtegeyKycView> {
 
 /// Statuses where verification has genuinely concluded (one way or another) — every other known
 /// status ('Not Started', 'In Progress', 'Awaiting User', 'In Review', 'Resubmitted') means the
-/// user may still be actively completing the flow inside the webview. Not used to auto-close the
-/// sheet below (see the note on [ProtegeyKycPresentation.presentVerification] for why) — kept here
-/// as a reference for host apps building a custom presentation around [ProtegeyKycView] directly.
+/// user may still be actively completing the flow inside the webview. This is what
+/// [ProtegeyKycPresentation.presentVerification] uses to start its delayed auto-close timer (see
+/// its own doc comment) — kept here as a public reference too, for host apps building a custom
+/// presentation around [ProtegeyKycView] directly.
 const _terminalKycStatuses = {'Approved', 'Declined', 'Abandoned', 'Expired', 'Kyc Expired'};
+
+/// How long to leave the sheet open after a terminal status first arrives, before auto-closing it.
+/// The webview's own result screen (protegey-facetec-web's ResultScreen.tsx) shows a matching
+/// countdown and attempts to close itself via window.close() — which most WebView hosts silently
+/// ignore, this app's included, so this timer is the one that actually closes the sheet. It runs a
+/// couple seconds longer than that page's own countdown so it acts as a safety net the page's
+/// countdown normally beats, not a race against it the way an immediate close used to be.
+const _autoCloseDelay = Duration(seconds: 7);
 
 /// The one-call integration: starts a session and shows it in a draggable bottom sheet — no UI
 /// code needed on your end. The sheet has a drag handle and a Close button (swipe down or tap it
-/// to back out at any point). Returns the last known status once the user closes the sheet
-/// themselves, or `null` if none ever arrived.
-///
-/// Deliberately does NOT auto-dismiss the instant a terminal status (see [_terminalKycStatuses])
-/// is polled: the webview itself shows its own result screen (pass/fail, a Fermer button) once the
-/// capture flow finishes, and that status flip is what the page's own submission just caused — a
-/// background poll tick can notice it and the host would then be racing its own page to close the
-/// sheet, sometimes winning and closing it before the user ever sees that screen. Closing stays a
-/// user action (the Close button here, or the webview's own Fermer button once its host wires one
-/// up to actually dismiss the sheet rather than just attempting window.close()).
+/// to back out at any point), and auto-closes itself [_autoCloseDelay] after a terminal status
+/// (see [_terminalKycStatuses]) first arrives — long enough for the webview's own result screen to
+/// actually be seen first. Returns the last known status once the sheet closes, whether that was
+/// the user tapping Close or the auto-close timer, or `null` if none ever arrived.
 ///
 /// Prefer this for the common case. Reach for [ProtegeyKycView] directly only if you need a
 /// different presentation (e.g. a full page instead of a sheet) or want to drive the polling UI
@@ -102,6 +105,7 @@ extension ProtegeyKycPresentation on KycModule {
   Future<KycSessionStatus?> presentVerification(BuildContext context, {required String externalUserId}) async {
     final session = await startSession(externalUserId: externalUserId);
     KycSessionStatus? finalStatus;
+    Timer? autoCloseTimer;
 
     if (!context.mounted) return null;
     // isScrollControlled alone doesn't reliably cap the sheet's height on every platform — on
@@ -121,10 +125,18 @@ extension ProtegeyKycPresentation on KycModule {
         url: session.url,
         onStatusChange: (status) {
           finalStatus = status;
+          // Only arm the timer once — a second status change before it fires (e.g. a transient
+          // "In Review" after "Declined" on a resubmission flow) shouldn't restart the clock.
+          if (_terminalKycStatuses.contains(status.status) && autoCloseTimer == null) {
+            autoCloseTimer = Timer(_autoCloseDelay, () {
+              if (sheetContext.mounted) Navigator.pop(sheetContext);
+            });
+          }
         },
       ),
     );
 
+    autoCloseTimer?.cancel();
     return finalStatus;
   }
 }
