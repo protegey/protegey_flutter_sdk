@@ -92,6 +92,31 @@ void main() {
       expect(body['deviceAttributes'], {'isRooted': true});
     });
 
+    test('passes channel/counterpartyInstitutionCode/counterpartyCountry through when given', () async {
+      http.Request? captured;
+      final mock = MockClient((request) async {
+        captured = request;
+        return http.Response(jsonEncode(_successBody), 200);
+      });
+      final transactions = TransactionsModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
+
+      await transactions.report(TransactionInput(
+        externalTransactionId: 'tx-1',
+        externalCustomerId: 'cust-1',
+        direction: TransactionDirection.debit,
+        amount: 2000000,
+        transactionType: 'wire',
+        channel: TransactionChannel.online,
+        counterpartyInstitutionCode: 'ECOBKTGTG',
+        counterpartyCountry: 'SN',
+      ));
+
+      final body = jsonDecode(captured!.body) as Map<String, dynamic>;
+      expect(body['channel'], 'online');
+      expect(body['counterpartyInstitutionCode'], 'ECOBKTGTG');
+      expect(body['counterpartyCountry'], 'SN');
+    });
+
     test('parses the response into a ReportTransactionResult', () async {
       final mock = MockClient((request) async => http.Response(
             jsonEncode({
