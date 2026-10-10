@@ -1,6 +1,6 @@
 # protegey_sdk
 
-Official Protegey SDK for Flutter. Device intelligence, transaction reporting, identity verification and behavioral biometrics, called directly from your app with your own API key.
+Official Protegey SDK for Flutter. Device intelligence, identity verification and behavioral biometrics, called directly from your app with your own API key.
 
 ## Install
 
@@ -37,18 +37,6 @@ final identify = await protegey.device.identify(
   phoneNumber: '+22890000001', // optional — you already have it, never read off the device
 );
 
-// Transactions
-final result = await protegey.transactions.report(TransactionInput(
-  externalTransactionId: 'tx-00234',
-  externalCustomerId: 'cust-9981',
-  direction: TransactionDirection.debit,
-  amount: 250000,
-  currency: 'XOF',
-  transactionType: 'cashout',
-  isCash: true,
-  visitorId: identify.visitorId, // fold the same device signal into this transaction's decision
-));
-
 // Identity verification — one call starts the session AND shows it in a draggable bottom sheet
 // (drag handle + Close button). The user never leaves your app, and there's no UI code to write
 // for that on your end. Resolves with the final status, or null if closed before one arrived.
@@ -72,6 +60,18 @@ final behavioral = await protegey.behavioral.report(ReportBehavioralEventInput(
 // behavioral.status == 'learning' for the first few sessions of any given customer — expected, not an error.
 // Once scored: behavioral.stepUpRecommended tells you whether to challenge this user yourself (OTP, biometric, ...).
 ```
+
+## Transactions — report these from your backend, not from this app
+
+`POST /partner-api/transactions` is meant to be called server-to-server, from your own backend,
+not from this SDK — it carries the full-privilege API key, and your backend already has the
+authoritative transaction data (amount, currency, parties) since it's the one processing it.
+Calling `device.identify()` above is this app's actual job: as long as your backend sends the
+same `externalCustomerId` when it reports the transaction a few minutes later, Protegey picks up
+this device/session signal automatically — nothing to relay yourself. `protegey.transactions`
+still exists on this client for a quick local/sandbox test, but shipping a real app through it
+means embedding your secret key in the app bundle, which this package does nothing to restrict
+(see Security below) — use one of the server-side SDKs (`@protegey/sdk`, PHP, Java) instead.
 
 ## `baseUrl` — no default, on purpose
 
