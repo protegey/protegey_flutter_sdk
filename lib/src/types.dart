@@ -133,6 +133,24 @@ extension on TransactionDirection {
   String get wireValue => this == TransactionDirection.debit ? 'DEBIT' : 'CREDIT';
 }
 
+/// How the transaction was initiated — lets a Pan Studio rule distinguish e.g. a USSD cash-out
+/// from an API-initiated transfer. Omit if not meaningful for your integration.
+enum TransactionChannel { branch, atm, pos, online, mobileApp, ussd, agent, api, callCenter }
+
+extension on TransactionChannel {
+  String get wireValue => switch (this) {
+        TransactionChannel.branch => 'branch',
+        TransactionChannel.atm => 'atm',
+        TransactionChannel.pos => 'pos',
+        TransactionChannel.online => 'online',
+        TransactionChannel.mobileApp => 'mobile_app',
+        TransactionChannel.ussd => 'ussd',
+        TransactionChannel.agent => 'agent',
+        TransactionChannel.api => 'api',
+        TransactionChannel.callCenter => 'call_center',
+      };
+}
+
 class TransactionInput {
   final String externalTransactionId;
   final String externalCustomerId;
@@ -141,6 +159,17 @@ class TransactionInput {
   final String? currency;
   final String transactionType;
   final String? counterpartyExternalId;
+
+  /// How this transaction was initiated — see [TransactionChannel].
+  final TransactionChannel? channel;
+
+  /// SWIFT/BIC or a local bank/MNO code for the counterparty's institution — bank-wire and
+  /// cross-institution mobile-money scenarios. Free-form: no single format fits every network.
+  final String? counterpartyInstitutionCode;
+
+  /// The counterparty's country (ISO 3166-1 recommended, not enforced) — compare against your
+  /// customer's own [country] in a Pan Studio rule to flag cross-border activity.
+  final String? counterpartyCountry;
   final bool? isCash;
 
   /// Defaults to now if omitted.
@@ -163,6 +192,9 @@ class TransactionInput {
     this.currency,
     required this.transactionType,
     this.counterpartyExternalId,
+    this.channel,
+    this.counterpartyInstitutionCode,
+    this.counterpartyCountry,
     this.isCash,
     this.occurredAt,
     this.segment,
@@ -181,6 +213,9 @@ class TransactionInput {
         if (currency != null) 'currency': currency,
         'transactionType': transactionType,
         if (counterpartyExternalId != null) 'counterpartyExternalId': counterpartyExternalId,
+        if (channel != null) 'channel': channel!.wireValue,
+        if (counterpartyInstitutionCode != null) 'counterpartyInstitutionCode': counterpartyInstitutionCode,
+        if (counterpartyCountry != null) 'counterpartyCountry': counterpartyCountry,
         if (isCash != null) 'isCash': isCash,
         'occurredAt': (occurredAt ?? DateTime.now().toUtc()).toIso8601String(),
         if (segment != null) 'segment': segment,

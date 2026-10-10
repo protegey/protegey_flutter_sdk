@@ -1,3 +1,7 @@
+## 0.3.0
+
+- `TransactionInput` gains `channel` (new `TransactionChannel` enum: branch/atm/pos/online/mobileApp/ussd/agent/api/callCenter), `counterpartyInstitutionCode`, and `counterpartyCountry` — lets Pan Studio rules target bank-wire and cross-border scenarios, not just mobile-money structuring.
+
 ## 0.2.2
 
 - Docs: clarified that `transactions.report()` isn't the recommended way to report a transaction
