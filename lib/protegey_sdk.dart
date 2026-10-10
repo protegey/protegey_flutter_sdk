@@ -26,7 +26,6 @@ export 'src/behavioral.dart'
 /// ```dart
 /// final protegey = Protegey(apiKey: 'YOUR_API_KEY', baseUrl: 'https://api.protegey.com');
 /// final identify = await protegey.device.identify(externalCustomerId: 'cust-1');
-/// await protegey.transactions.report(TransactionInput(...));
 /// final status = await protegey.kyc.presentVerification(context, externalUserId: 'cust-1');
 /// final behavioral = await protegey.behavioral.report(ReportBehavioralEventInput(
 ///   externalCustomerId: 'cust-1',
