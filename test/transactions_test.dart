@@ -117,6 +117,47 @@ void main() {
       expect(body['counterpartyCountry'], 'SN');
     });
 
+    test('passes lastPasswordChangeAt/lastEmailChangeAt/lastPhoneChangeAt through when given', () async {
+      http.Request? captured;
+      final mock = MockClient((request) async {
+        captured = request;
+        return http.Response(jsonEncode(_successBody), 200);
+      });
+      final transactions = TransactionsModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
+
+      await transactions.report(TransactionInput(
+        externalTransactionId: 'tx-1',
+        externalCustomerId: 'cust-1',
+        direction: TransactionDirection.debit,
+        amount: 500000,
+        transactionType: 'cashout',
+        lastPasswordChangeAt: DateTime.utc(2026, 1, 15, 10),
+        lastEmailChangeAt: DateTime.utc(2026, 1, 13, 12),
+        lastPhoneChangeAt: DateTime.utc(2026, 1, 14, 8),
+      ));
+
+      final body = jsonDecode(captured!.body) as Map<String, dynamic>;
+      expect(body['lastPasswordChangeAt'], DateTime.utc(2026, 1, 15, 10).toIso8601String());
+      expect(body['lastEmailChangeAt'], DateTime.utc(2026, 1, 13, 12).toIso8601String());
+      expect(body['lastPhoneChangeAt'], DateTime.utc(2026, 1, 14, 8).toIso8601String());
+    });
+
+    test('omits lastPasswordChangeAt/lastEmailChangeAt/lastPhoneChangeAt when not given', () async {
+      http.Request? captured;
+      final mock = MockClient((request) async {
+        captured = request;
+        return http.Response(jsonEncode(_successBody), 200);
+      });
+      final transactions = TransactionsModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
+
+      await transactions.report(_baseInput());
+
+      final body = jsonDecode(captured!.body) as Map<String, dynamic>;
+      expect(body.containsKey('lastPasswordChangeAt'), isFalse);
+      expect(body.containsKey('lastEmailChangeAt'), isFalse);
+      expect(body.containsKey('lastPhoneChangeAt'), isFalse);
+    });
+
     test('parses the response into a ReportTransactionResult', () async {
       final mock = MockClient((request) async => http.Response(
             jsonEncode({
