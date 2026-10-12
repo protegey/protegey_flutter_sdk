@@ -184,6 +184,19 @@ class TransactionInput {
   final DeviceAttributes? deviceAttributes;
   final String? devicePhoneNumber;
 
+  /// When this customer's login password was last changed, if you track it — lets a Pan Studio
+  /// rule flag a large transaction shortly after a credential change (a classic account-takeover
+  /// pattern). Omit if unknown; the corresponding rule field then simply never fires — Protegey
+  /// never guesses this.
+  final DateTime? lastPasswordChangeAt;
+
+  /// Same idea as [lastPasswordChangeAt], for the account's registered email address.
+  final DateTime? lastEmailChangeAt;
+
+  /// Same idea as [lastPasswordChangeAt], for the account's registered phone number — also
+  /// covers a SIM swap for telcos, which is the same signal from your point of view.
+  final DateTime? lastPhoneChangeAt;
+
   const TransactionInput({
     required this.externalTransactionId,
     required this.externalCustomerId,
@@ -203,6 +216,9 @@ class TransactionInput {
     this.visitorId,
     this.deviceAttributes,
     this.devicePhoneNumber,
+    this.lastPasswordChangeAt,
+    this.lastEmailChangeAt,
+    this.lastPhoneChangeAt,
   });
 
   Map<String, dynamic> toJson() => {
@@ -224,6 +240,9 @@ class TransactionInput {
         if (visitorId != null) 'visitorId': visitorId,
         if (deviceAttributes != null) 'deviceAttributes': deviceAttributes!.toJson(),
         if (devicePhoneNumber != null) 'devicePhoneNumber': devicePhoneNumber,
+        if (lastPasswordChangeAt != null) 'lastPasswordChangeAt': lastPasswordChangeAt!.toUtc().toIso8601String(),
+        if (lastEmailChangeAt != null) 'lastEmailChangeAt': lastEmailChangeAt!.toUtc().toIso8601String(),
+        if (lastPhoneChangeAt != null) 'lastPhoneChangeAt': lastPhoneChangeAt!.toUtc().toIso8601String(),
       };
 }
 
