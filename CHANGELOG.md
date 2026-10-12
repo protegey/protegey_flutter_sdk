@@ -1,3 +1,7 @@
+## 0.4.0
+
+- `TransactionInput` gains `lastPasswordChangeAt`, `lastEmailChangeAt`, `lastPhoneChangeAt` — lets a Pan Studio rule flag a large transaction shortly after an account credential change, a classic account-takeover pattern. `lastPhoneChangeAt` also covers a SIM swap for telcos. Omit any of them and the corresponding rule field simply never fires — Protegey never guesses this.
+
 ## 0.3.0
 
 - `TransactionInput` gains `channel` (new `TransactionChannel` enum: branch/atm/pos/online/mobileApp/ussd/agent/api/callCenter), `counterpartyInstitutionCode`, and `counterpartyCountry` — lets Pan Studio rules target bank-wire and cross-border scenarios, not just mobile-money structuring.
