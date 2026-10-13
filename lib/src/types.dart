@@ -197,6 +197,11 @@ class TransactionInput {
   /// covers a SIM swap for telcos, which is the same signal from your point of view.
   final DateTime? lastPhoneChangeAt;
 
+  /// The account's balance immediately before this transaction, if you track it — lets a Pan
+  /// Studio rule flag a withdrawal/transfer that drains most of the balance (a classic mule-
+  /// account/account-drain signal). Only meaningful for a DEBIT. Omit if unknown.
+  final num? accountBalanceBefore;
+
   const TransactionInput({
     required this.externalTransactionId,
     required this.externalCustomerId,
@@ -219,6 +224,7 @@ class TransactionInput {
     this.lastPasswordChangeAt,
     this.lastEmailChangeAt,
     this.lastPhoneChangeAt,
+    this.accountBalanceBefore,
   });
 
   Map<String, dynamic> toJson() => {
@@ -243,6 +249,7 @@ class TransactionInput {
         if (lastPasswordChangeAt != null) 'lastPasswordChangeAt': lastPasswordChangeAt!.toUtc().toIso8601String(),
         if (lastEmailChangeAt != null) 'lastEmailChangeAt': lastEmailChangeAt!.toUtc().toIso8601String(),
         if (lastPhoneChangeAt != null) 'lastPhoneChangeAt': lastPhoneChangeAt!.toUtc().toIso8601String(),
+        if (accountBalanceBefore != null) 'accountBalanceBefore': accountBalanceBefore,
       };
 }
 

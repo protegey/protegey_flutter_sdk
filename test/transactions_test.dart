@@ -158,6 +158,30 @@ void main() {
       expect(body.containsKey('lastPhoneChangeAt'), isFalse);
     });
 
+    test('passes accountBalanceBefore through when given, omits it otherwise', () async {
+      http.Request? captured;
+      final mock = MockClient((request) async {
+        captured = request;
+        return http.Response(jsonEncode(_successBody), 200);
+      });
+      final transactions = TransactionsModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
+
+      await transactions.report(TransactionInput(
+        externalTransactionId: 'tx-1',
+        externalCustomerId: 'cust-1',
+        direction: TransactionDirection.debit,
+        amount: 80000,
+        transactionType: 'cashout',
+        accountBalanceBefore: 100000,
+      ));
+      final body = jsonDecode(captured!.body) as Map<String, dynamic>;
+      expect(body['accountBalanceBefore'], 100000);
+
+      await transactions.report(_baseInput());
+      final body2 = jsonDecode(captured!.body) as Map<String, dynamic>;
+      expect(body2.containsKey('accountBalanceBefore'), isFalse);
+    });
+
     test('parses the response into a ReportTransactionResult', () async {
       final mock = MockClient((request) async => http.Response(
             jsonEncode({
