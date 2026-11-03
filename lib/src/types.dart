@@ -154,6 +154,12 @@ extension on TransactionChannel {
 class TransactionInput {
   final String externalTransactionId;
   final String externalCustomerId;
+
+  /// The customer's display name, as you know it — self-declared, never verified by Protegey
+  /// (same trust model as [isPep]). Shows up directly in the Pan Studio transactions table. Omit
+  /// to reuse whatever name you sent on a previous transaction for this customer — once sent,
+  /// it's remembered and keeps showing on their later transactions too.
+  final String? customerName;
   final TransactionDirection direction;
   final num amount;
   final String? currency;
@@ -205,6 +211,7 @@ class TransactionInput {
   const TransactionInput({
     required this.externalTransactionId,
     required this.externalCustomerId,
+    this.customerName,
     required this.direction,
     required this.amount,
     this.currency,
@@ -230,6 +237,7 @@ class TransactionInput {
   Map<String, dynamic> toJson() => {
         'externalTransactionId': externalTransactionId,
         'externalCustomerId': externalCustomerId,
+        if (customerName != null) 'customerName': customerName,
         'direction': direction.wireValue,
         'amount': amount,
         if (currency != null) 'currency': currency,
