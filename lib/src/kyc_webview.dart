@@ -122,6 +122,14 @@ extension ProtegeyKycPresentation on KycModule {
       useSafeArea: true,
       backgroundColor: Colors.transparent,
       constraints: BoxConstraints(maxHeight: maxHeight),
+      // A modal bottom sheet listens for vertical drags across its WHOLE body by default (to let
+      // the user swipe it down to dismiss) — that swallows the same vertical touch gesture the
+      // embedded WebView needs for its own internal scrolling, since a raw WebView isn't a Flutter
+      // Scrollable the sheet knows how to arbitrate against. Result: content taller than the sheet
+      // (e.g. the result screen's Scores/Risk factors sections) becomes unscrollable. Disabling
+      // drag-to-dismiss here removes that conflict; Close (button) and the auto-close timer on a
+      // terminal status remain the ways to dismiss.
+      enableDrag: false,
       builder: (sheetContext) => _ProtegeyKycSheet(
         kyc: this,
         sessionId: session.sessionId,
