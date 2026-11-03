@@ -11,7 +11,7 @@ import 'src/kyc.dart';
 import 'src/transactions.dart';
 
 export 'src/types.dart';
-export 'src/kyc.dart' show KycModule, StartKycSessionResult, KycSessionStatus;
+export 'src/kyc.dart' show KycModule, StartKycSessionResult, KycSessionStatus, KycOutcome;
 export 'src/kyc_webview.dart' show ProtegeyKycView, ProtegeyKycPresentation;
 export 'src/behavioral.dart'
     show

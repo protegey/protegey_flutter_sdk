@@ -76,12 +76,15 @@ class _ProtegeyKycViewState extends State<ProtegeyKycView> {
 }
 
 /// Statuses where verification has genuinely concluded (one way or another) — every other known
-/// status ('Not Started', 'In Progress', 'Awaiting User', 'In Review', 'Resubmitted') means the
-/// user may still be actively completing the flow inside the webview. This is what
+/// status ('Not Started', 'In Progress', 'Awaiting User', 'Resubmitted') means the user may still
+/// be actively completing the flow inside the webview. This is what
 /// [ProtegeyKycPresentation.presentVerification] uses to start its delayed auto-close timer (see
 /// its own doc comment) — kept here as a public reference too, for host apps building a custom
-/// presentation around [ProtegeyKycView] directly.
-const _terminalKycStatuses = {'Approved', 'Declined', 'Abandoned', 'Expired', 'Kyc Expired'};
+/// presentation around [ProtegeyKycView] directly. 'In Review' IS terminal here — it's what a
+/// concluded FaceTec session reports when the match confidence is below the auto-approve
+/// threshold (decision.outcome == 'MANUAL'); FaceTec is done, a human just needs to review it
+/// later — the sheet shouldn't stay open waiting for that.
+const _terminalKycStatuses = {'Approved', 'Declined', 'In Review', 'Abandoned', 'Expired', 'Kyc Expired'};
 
 /// How long to leave the sheet open after a terminal status first arrives, before auto-closing it.
 /// The webview's own result screen (protegey-facetec-web's ResultScreen.tsx) shows a matching
