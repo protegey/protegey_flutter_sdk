@@ -42,7 +42,7 @@ void main() {
       final mock = MockClient((request) async {
         captured = request;
         return http.Response(
-          jsonEncode({'sessionId': 'sess_1', 'externalUserId': 'cust-1', 'status': 'Approved', 'decision': null}),
+          jsonEncode({'sessionId': 'sess_1', 'externalUserId': 'cust-1', 'status': 'APPROVED', 'decision': null}),
           200,
         );
       });
@@ -52,7 +52,7 @@ void main() {
 
       expect(captured!.method, 'GET');
       expect(captured!.url.toString(), 'https://api.example.com/partner-api/kyc/sessions/sess_1');
-      expect(result.status, 'Approved');
+      expect(result.status, 'APPROVED');
       expect(result.externalUserId, 'cust-1');
     });
 

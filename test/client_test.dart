@@ -34,7 +34,7 @@ void main() {
       http.Request? captured;
       final mock = MockClient((request) async {
         captured = request;
-        return http.Response(jsonEncode({'status': 'Approved'}), 200);
+        return http.Response(jsonEncode({'status': 'APPROVED'}), 200);
       });
 
       final client = ProtegeyHttpClient('secret-key', baseUrl: 'https://api.example.com', httpClient: mock);
@@ -43,7 +43,7 @@ void main() {
       expect(captured!.method, 'GET');
       expect(captured!.url.toString(), 'https://api.example.com/foo/bar');
       expect(captured!.headers['x-api-key'], 'secret-key');
-      expect(result, {'status': 'Approved'});
+      expect(result, {'status': 'APPROVED'});
     });
 
     test('strips a trailing slash from a custom baseUrl', () async {

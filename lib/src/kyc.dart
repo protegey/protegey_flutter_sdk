@@ -15,9 +15,9 @@ class StartKycSessionResult {
 
 /// 'success' = confident match, auto-approved. 'manual' = FaceTec's hard checks (liveness, ID
 /// scan) passed but the match confidence was below the configurable auto-approve threshold (80%
-/// by default) — a human needs to review it; reported as session status 'In Review'. 'failed' = a
+/// by default) — a human needs to review it; reported as session status 'IN_REVIEW'. 'failed' = a
 /// hard check itself failed (liveness never proven, ID scan failed, or no face match at all);
-/// reported as session status 'Declined'. `unknown` before a FaceTec result has come back yet, or
+/// reported as session status 'DECLINED'. `unknown` before a FaceTec result has come back yet, or
 /// for a status value this SDK version doesn't recognize.
 enum KycOutcome { success, manual, failed, unknown }
 

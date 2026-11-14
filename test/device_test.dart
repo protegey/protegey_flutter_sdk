@@ -7,7 +7,7 @@ import 'package:protegey_sdk/src/client.dart';
 import 'package:protegey_sdk/src/device.dart';
 import 'package:protegey_sdk/src/types.dart';
 
-const _successBody = {'recorded': true, 'action': 'allow', 'riskScore': 0};
+const _successBody = {'recorded': true, 'action': 'ALLOW', 'riskScore': 0};
 
 void main() {
   group('DeviceModule.identify', () {
@@ -85,7 +85,7 @@ void main() {
     });
 
     test('parses the backend action into the DeviceAction enum', () async {
-      final mock = MockClient((request) async => http.Response(jsonEncode({'recorded': true, 'action': 'soft_challenge', 'riskScore': 15}), 200));
+      final mock = MockClient((request) async => http.Response(jsonEncode({'recorded': true, 'action': 'SOFT_CHALLENGE', 'riskScore': 15}), 200));
       final device = DeviceModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
 
       final result = await device.identify(visitorId: 'v1');
