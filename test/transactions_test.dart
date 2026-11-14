@@ -9,7 +9,7 @@ import 'package:protegey_sdk/src/types.dart';
 
 const _successBody = {
   'transactionId': 'tx-uuid-1',
-  'decision': 'clear',
+  'decision': 'CLEAR',
   'riskScore': 0,
   'alerts': [],
   'deviceAction': null,
@@ -210,12 +210,12 @@ void main() {
       final mock = MockClient((request) async => http.Response(
             jsonEncode({
               'transactionId': 'tx-uuid-2',
-              'decision': 'review',
+              'decision': 'REVIEW',
               'riskScore': 35,
               'alerts': [
                 {'id': 'alert-1', 'ruleCode': 'IND012-KYC1', 'status': 'open'}
               ],
-              'deviceAction': 'hard_challenge',
+              'deviceAction': 'HARD_CHALLENGE',
             }),
             200,
           ));
@@ -224,7 +224,7 @@ void main() {
       final result = await transactions.report(_baseInput());
 
       expect(result.transactionId, 'tx-uuid-2');
-      expect(result.decision, 'review');
+      expect(result.decision, 'REVIEW');
       expect(result.riskScore, 35);
       expect(result.alerts, hasLength(1));
       expect(result.deviceAction, DeviceAction.hardChallenge);

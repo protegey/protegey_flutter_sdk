@@ -96,15 +96,19 @@ class DeviceAttributes {
 
 enum DeviceAction { allow, softChallenge, hardChallenge, block }
 
+/// Every status/decision/action-like field on partner-api moved to UPPER_SNAKE_CASE on
+/// 2026-11-14 (backend commit f2b2375 and follow-ups) — this now expects 'ALLOW',
+/// 'SOFT_CHALLENGE', 'HARD_CHALLENGE', 'BLOCK' on the wire, matching both the standalone
+/// device-events response and the deviceAction field embedded in a transaction response.
 DeviceAction? deviceActionFromWire(String? value) {
   switch (value) {
-    case 'allow':
+    case 'ALLOW':
       return DeviceAction.allow;
-    case 'soft_challenge':
+    case 'SOFT_CHALLENGE':
       return DeviceAction.softChallenge;
-    case 'hard_challenge':
+    case 'HARD_CHALLENGE':
       return DeviceAction.hardChallenge;
-    case 'block':
+    case 'BLOCK':
       return DeviceAction.block;
     default:
       return null;

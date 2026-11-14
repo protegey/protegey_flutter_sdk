@@ -6,7 +6,7 @@ import 'package:http/testing.dart';
 import 'package:protegey_sdk/src/behavioral.dart';
 import 'package:protegey_sdk/src/client.dart';
 
-const _learningBody = {'status': 'learning', 'deviationScore': 0, 'confidenceTier': null, 'stepUpRecommended': false, 'escalatedAlertId': null};
+const _learningBody = {'status': 'LEARNING', 'deviationScore': 0, 'confidenceTier': null, 'stepUpRecommended': false, 'escalatedAlertId': null};
 
 ReportBehavioralEventInput _baseInput() {
   return const ReportBehavioralEventInput(
@@ -46,20 +46,20 @@ void main() {
 
       final result = await behavioral.report(_baseInput());
 
-      expect(result.status, 'learning');
+      expect(result.status, 'LEARNING');
       expect(result.confidenceTier, isNull);
     });
 
     test('returns a "scored" result with stepUpRecommended once a baseline exists', () async {
       final mock = MockClient((request) async => http.Response(
-            jsonEncode({'status': 'scored', 'deviationScore': 35, 'confidenceTier': 'medium', 'stepUpRecommended': true, 'escalatedAlertId': null}),
+            jsonEncode({'status': 'SCORED', 'deviationScore': 35, 'confidenceTier': 'MEDIUM', 'stepUpRecommended': true, 'escalatedAlertId': null}),
             200,
           ));
       final behavioral = BehavioralModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
 
       final result = await behavioral.report(_baseInput());
 
-      expect(result.status, 'scored');
+      expect(result.status, 'SCORED');
       expect(result.confidenceTier, BehavioralConfidenceTier.medium);
       expect(result.stepUpRecommended, isTrue);
     });

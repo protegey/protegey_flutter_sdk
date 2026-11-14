@@ -90,13 +90,15 @@ class ReportBehavioralEventInput {
 
 enum BehavioralConfidenceTier { low, medium, high }
 
+/// confidenceTier is UPPER_SNAKE_CASE on the wire since 2026-11-14 (the partner-api UPPERCASE
+/// rollout) — 'LOW', 'MEDIUM', 'HIGH'.
 BehavioralConfidenceTier? _confidenceTierFromWire(String? value) {
   switch (value) {
-    case 'low':
+    case 'LOW':
       return BehavioralConfidenceTier.low;
-    case 'medium':
+    case 'MEDIUM':
       return BehavioralConfidenceTier.medium;
-    case 'high':
+    case 'HIGH':
       return BehavioralConfidenceTier.high;
     default:
       return null;
