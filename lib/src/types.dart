@@ -155,6 +155,21 @@ extension on TransactionChannel {
       };
 }
 
+/// Mirrors the backend's `CustomerSegment` enum (monitoring/enums/customer-segment.enum.ts) —
+/// used by Pan Studio rules to apply different thresholds per customer tier.
+enum CustomerSegment { kyc1, kyc2, agent, superAgent, merchant, corporate }
+
+extension on CustomerSegment {
+  String get wireValue => switch (this) {
+        CustomerSegment.kyc1 => 'KYC1',
+        CustomerSegment.kyc2 => 'KYC2',
+        CustomerSegment.agent => 'AGENT',
+        CustomerSegment.superAgent => 'SUPER_AGENT',
+        CustomerSegment.merchant => 'MERCHANT',
+        CustomerSegment.corporate => 'CORPORATE',
+      };
+}
+
 class TransactionInput {
   final String externalTransactionId;
   final String externalCustomerId;
@@ -184,7 +199,9 @@ class TransactionInput {
 
   /// Defaults to now if omitted.
   final DateTime? occurredAt;
-  final String? segment;
+
+  /// This customer's segment/tier — see [CustomerSegment].
+  final CustomerSegment? segment;
   final String? country;
   final bool? isPep;
 
@@ -252,7 +269,7 @@ class TransactionInput {
         if (counterpartyCountry != null) 'counterpartyCountry': counterpartyCountry,
         if (isCash != null) 'isCash': isCash,
         'occurredAt': (occurredAt ?? DateTime.now().toUtc()).toIso8601String(),
-        if (segment != null) 'segment': segment,
+        if (segment != null) 'segment': segment!.wireValue,
         if (country != null) 'country': country,
         if (isPep != null) 'isPep': isPep,
         if (visitorId != null) 'visitorId': visitorId,
