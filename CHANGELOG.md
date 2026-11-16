@@ -1,3 +1,11 @@
+## 0.7.0
+
+- `KycSessionStatus` (returned by `kyc.getSession()` / `presentVerification()`) now parses `fullName`, `documentType`, `country`, `livenessScore`, `faceMatchScore`, `documentPhoto`, `documentBackPhoto`, `selfiePhoto`, `documentFaceCrop` — these were already in the backend response but silently dropped before.
+- `kyc.startSession()` / `presentVerification()` gain optional `email`/`phone` — never Protegey-verified, feeds identity-resolution's cross-partner matching. Omit either if unknown.
+- `TransactionInput.segment` is now a `CustomerSegment` enum (`kyc1`/`kyc2`/`agent`/`superAgent`/`merchant`/`corporate`) instead of a loose `String?`, matching the closed set the backend validates against — same pattern as `TransactionDirection`/`TransactionChannel`.
+- Docs: fixed stale "provider" references (biometric, via Protegey's own capture-web app, has been the only capture flow for a while) and a stale `provider` backend path in doc comments. No behavior change.
+- Docs: `behavioral.status` comments now show the actual uppercase wire value (`'LEARNING'`/`'SCORED'`) instead of a stale lowercase one.
+
 ## 0.6.0
 
 - `TransactionInput` gains `customerName` — shows up directly in the Pan Studio transactions table instead of just the opaque `externalCustomerId`. Self-declared, never verified by Protegey. Send it once and it's remembered on this customer's later transactions too, even if you omit it on some of them.
