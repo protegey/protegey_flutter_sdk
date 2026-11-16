@@ -5,8 +5,9 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import 'kyc.dart';
 
-/// Shows the provider-hosted KYC flow inside the host app — the end user never leaves the partner's
-/// app. provider is a third party Protegey doesn't control the completion redirect of, so this
+/// Shows Protegey's own biometric-hosted KYC capture flow inside the host app — the end user never
+/// leaves the partner's app. Capture happens in Protegey's own capture-web app, never a third-
+/// party redirect, but there's still no completion event to watch navigation for, so this
 /// doesn't watch navigation: it polls [KycModule.getSession] in the background (the same
 /// best-effort polling fallback [KycModule] already documents) and reports every status change via
 /// [onStatusChange]. The host app decides what counts as "done" (e.g. the first terminal status —
@@ -45,7 +46,7 @@ class _ProtegeyKycViewState extends State<ProtegeyKycView> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..loadRequest(Uri.parse(widget.url));
     // Without this, webview_flutter silently DENIES every camera/microphone request from the
-    // page by default — the provider/biometric capture flow then fails with its own "camera access
+    // page by default — the biometric capture flow then fails with its own "camera access
     // denied" screen, which looks like a permission bug but is really just a missing grant here.
     // Safe to auto-grant unconditionally: this controller only ever loads our own KYC session URL.
     _controller.platform.setOnPlatformPermissionRequest((request) => request.grant());
@@ -108,8 +109,13 @@ const _autoCloseDelay = Duration(seconds: 7);
 /// different presentation (e.g. a full page instead of a sheet) or want to drive the polling UI
 /// yourself.
 extension ProtegeyKycPresentation on KycModule {
-  Future<KycSessionStatus?> presentVerification(BuildContext context, {required String externalUserId}) async {
-    final session = await startSession(externalUserId: externalUserId);
+  Future<KycSessionStatus?> presentVerification(
+    BuildContext context, {
+    required String externalUserId,
+    String? email,
+    String? phone,
+  }) async {
+    final session = await startSession(externalUserId: externalUserId, email: email, phone: phone);
     KycSessionStatus? finalStatus;
     Timer? autoCloseTimer;
 
