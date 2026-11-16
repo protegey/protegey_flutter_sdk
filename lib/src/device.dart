@@ -6,7 +6,7 @@ import 'types.dart';
 
 const _uuid = Uuid();
 
-/// Device/session intelligence — replaces what a Keverd SDK call used to do.
+/// Device/session intelligence.
 class DeviceModule {
   final ProtegeyHttpClient _http;
 

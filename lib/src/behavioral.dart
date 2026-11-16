@@ -106,7 +106,7 @@ BehavioralConfidenceTier? _confidenceTierFromWire(String? value) {
 }
 
 class ReportBehavioralEventResult {
-  /// "learning": not enough history for this customer yet — no score, keep sending sessions.
+  /// "LEARNING": not enough history for this customer yet — no score, keep sending sessions.
   final String status;
   final int deviationScore;
   final BehavioralConfidenceTier? confidenceTier;

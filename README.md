@@ -57,7 +57,7 @@ final behavioral = await protegey.behavioral.report(ReportBehavioralEventInput(
   touch: const TouchMetrics(avgSwipeVelocity: 22, scrollBehaviorScore: 0.8),
   navigation: const NavigationMetrics(screenSequence: ['login', 'dashboard', 'transfer', 'confirm']),
 ));
-// behavioral.status == 'learning' for the first few sessions of any given customer — expected, not an error.
+// behavioral.status == 'LEARNING' for the first few sessions of any given customer — expected, not an error.
 // Once scored: behavioral.stepUpRecommended tells you whether to challenge this user yourself (OTP, biometric, ...).
 ```
 
