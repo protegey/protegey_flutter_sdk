@@ -46,12 +46,54 @@ class KycSessionStatus {
   final KycOutcome outcome;
   final Map<String, dynamic>? decision;
 
+  /// The verified user's full name, as read off their scanned ID document — null until FaceTec
+  /// has produced a result.
+  final String? fullName;
+
+  /// The scanned document's type (e.g. national ID, passport), as FaceTec identified it — null
+  /// until a result is available.
+  final String? documentType;
+
+  /// ISO-3166 alpha-2 country, extracted from the FaceTec decision once available.
+  final String? country;
+
+  /// 0-100 liveness-check score, once available.
+  final double? livenessScore;
+
+  /// 0-100 face-match score — selfie vs. ID portrait similarity — once available.
+  final double? faceMatchScore;
+
+  /// Base64-encoded image of the scanned ID document's front, once available. Sensitive —
+  /// handle like any other government-ID photo.
+  final String? documentPhoto;
+
+  /// Base64-encoded image of the scanned ID document's back, when the document type has one
+  /// (e.g. a national ID card; a passport has none).
+  final String? documentBackPhoto;
+
+  /// Base64-encoded selfie/liveness capture image, once available. Sensitive biometric data.
+  final String? selfiePhoto;
+
+  /// Base64-encoded face crop taken directly from the ID document's own printed photo —
+  /// distinct from [documentPhoto] (the whole front of the card) and [selfiePhoto] (the live
+  /// face captured during liveness).
+  final String? documentFaceCrop;
+
   const KycSessionStatus({
     required this.sessionId,
     required this.externalUserId,
     required this.status,
     required this.outcome,
     required this.decision,
+    this.fullName,
+    this.documentType,
+    this.country,
+    this.livenessScore,
+    this.faceMatchScore,
+    this.documentPhoto,
+    this.documentBackPhoto,
+    this.selfiePhoto,
+    this.documentFaceCrop,
   });
 
   factory KycSessionStatus.fromJson(Map<String, dynamic> json) {
@@ -61,6 +103,15 @@ class KycSessionStatus {
       status: json['status'] as String,
       outcome: _kycOutcomeFromJson(json['outcome'] as String?),
       decision: json['decision'] as Map<String, dynamic>?,
+      fullName: json['fullName'] as String?,
+      documentType: json['documentType'] as String?,
+      country: json['country'] as String?,
+      livenessScore: (json['livenessScore'] as num?)?.toDouble(),
+      faceMatchScore: (json['faceMatchScore'] as num?)?.toDouble(),
+      documentPhoto: json['documentPhoto'] as String?,
+      documentBackPhoto: json['documentBackPhoto'] as String?,
+      selfiePhoto: json['selfiePhoto'] as String?,
+      documentFaceCrop: json['documentFaceCrop'] as String?,
     );
   }
 }
@@ -71,8 +122,16 @@ class KycModule {
   KycModule(this._http);
 
   /// Starts an identity verification session for one of your end users — no manual API call needed.
-  Future<StartKycSessionResult> startSession({required String externalUserId}) async {
-    final response = await _http.post('/partner-api/kyc/sessions', {'externalUserId': externalUserId});
+  ///
+  /// [email] and [phone] are never Protegey-verified — trusted as given, same model as Pan
+  /// Studio's self-reported fields — and feed identity-resolution's cross-partner matching. Omit
+  /// either if unknown.
+  Future<StartKycSessionResult> startSession({required String externalUserId, String? email, String? phone}) async {
+    final response = await _http.post('/partner-api/kyc/sessions', {
+      'externalUserId': externalUserId,
+      if (email != null) 'email': email,
+      if (phone != null) 'phone': phone,
+    });
     return StartKycSessionResult.fromJson(response);
   }
 
