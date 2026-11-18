@@ -94,5 +94,23 @@ void main() {
       expect(result.riskScore, 15);
       expect(result.recorded, isTrue);
     });
+
+    test('sends caller-supplied hardware fields the SDK does not collect itself', () async {
+      http.Request? captured;
+      final mock = MockClient((request) async {
+        captured = request;
+        return http.Response(jsonEncode(_successBody), 201);
+      });
+      final device = DeviceModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
+
+      await device.identify(
+        visitorId: 'v1',
+        deviceAttributes: const DeviceAttributes(cpuCores: 8, totalMemoryMb: 4096, totalStorageMb: 65536, freeStorageMb: 1024),
+      );
+
+      final body = jsonDecode(captured!.body) as Map<String, dynamic>;
+      expect(captured!.url.path, '/partner-api/device-events');
+      expect(body['deviceAttributes'], {'cpuCores': 8, 'totalMemoryMb': 4096, 'totalStorageMb': 65536, 'freeStorageMb': 1024});
+    });
   });
 }

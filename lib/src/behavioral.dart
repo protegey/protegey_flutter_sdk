@@ -106,7 +106,8 @@ BehavioralConfidenceTier? _confidenceTierFromWire(String? value) {
 }
 
 class ReportBehavioralEventResult {
-  /// "LEARNING": not enough history for this customer yet — no score, keep sending sessions.
+  /// 'LEARNING' (not enough history for this customer yet — deviationScore 0, no tier, keep
+  /// sending sessions) or 'SCORED'.
   final String status;
   final int deviationScore;
   final BehavioralConfidenceTier? confidenceTier;
@@ -124,7 +125,7 @@ class ReportBehavioralEventResult {
   factory ReportBehavioralEventResult.fromJson(Map<String, dynamic> json) {
     return ReportBehavioralEventResult(
       status: json['status'] as String,
-      deviationScore: json['deviationScore'] as int,
+      deviationScore: (json['deviationScore'] as num).toInt(),
       confidenceTier: _confidenceTierFromWire(json['confidenceTier'] as String?),
       stepUpRecommended: json['stepUpRecommended'] as bool,
       escalatedAlertId: json['escalatedAlertId'] as String?,

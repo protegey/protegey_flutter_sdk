@@ -1,3 +1,13 @@
+## 0.8.0
+
+Audited against the current partner API (backend `prod`, 2026-11-18). Wire format was already correct for every endpoint this SDK calls; this release fills the remaining gaps.
+
+- `DeviceAttributes` gains `cpuCores`, `totalMemoryMb`, `totalStorageMb`, `freeStorageMb`, the last four fields of the backend's `DeviceAttributesDto`. They are not auto-collected; pass them via `deviceAttributes` if you have them.
+- `ProtegeyApiException` gains `errorCode`, filled from the backend's `errorCode` (`PARTNER_SUSPENDED`, `PARTNER_CONTRACT_REQUIRED` on 403).
+- `riskScore` / `deviationScore` parsing accepts any JSON number instead of requiring an int.
+- Docs: the webhook retry policy is now up to 5 attempts over about 3 h, not "one retry, no queue". The `kyc.status_changed` webhook carries no usable session id, so correlate on `externalUserId` or poll `getSession()`. Also documented the wire values of `KycSessionStatus.status`, the transaction `decision`, and behavioral `status`, plus the KYC link lifetime (30 min, single-use).
+- README: new Scope section listing exactly which endpoints the SDK wraps and why the back-office ones (KYB, alerts, sanctions, shared-signal, webhook verification) are server-side only.
+
 ## 0.7.0
 
 - `KycSessionStatus` (returned by `kyc.getSession()` / `presentVerification()`) now parses `fullName`, `documentType`, `country`, `livenessScore`, `faceMatchScore`, `documentPhoto`, `documentBackPhoto`, `selfiePhoto`, `documentFaceCrop` — these were already in the backend response but silently dropped before.

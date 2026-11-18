@@ -11,14 +11,14 @@ dependencies:
   protegey_sdk:
     git:
       url: https://github.com/protegey/protegey_flutter_sdk.git
-      ref: main # or pin a tag once one exists, e.g. v0.1.0
+      ref: main # or pin a tag once one exists, e.g. v0.8.0
 ```
 
 Once published, this becomes:
 
 ```yaml
 dependencies:
-  protegey_sdk: ^0.1.0
+  protegey_sdk: ^0.8.0
 ```
 
 Source: [github.com/protegey/protegey_flutter_sdk](https://github.com/protegey/protegey_flutter_sdk)
@@ -42,9 +42,12 @@ final identify = await protegey.device.identify(
 // for that on your end. Resolves with the final status, or null if closed before one arrived.
 final status = await protegey.kyc.presentVerification(context, externalUserId: 'cust-9981');
 
-// Polling fallback — webhook delivery is best-effort (one retry, no queue), so use this if
-// you're not sure a delivery ever arrived, or just want to double-check a session's status later
-// (presentVerification() already polls this internally while its sheet is open).
+// Polling fallback for the kyc.status_changed webhook — use this if you're not sure a delivery
+// ever arrived (the webhook is retried up to 5 times over ~3 h, only fires on a FaceTec result,
+// and carries no session id — only externalUserId), or to double-check a status later.
+// presentVerification() already polls this internally while its sheet is open.
+// status.status is UPPER_SNAKE_CASE ('APPROVED', 'IN_REVIEW', 'DECLINED', ...);
+// status.outcome is the typed KycOutcome (success / manual / failed / unknown).
 if (status != null) {
   final current = await protegey.kyc.getSession(status.sessionId);
 }
@@ -72,6 +75,30 @@ this device/session signal automatically — nothing to relay yourself. `protege
 still exists on this client for a quick local/sandbox test, but shipping a real app through it
 means embedding your secret key in the app bundle, which this package does nothing to restrict
 (see Security below) — use one of the server-side SDKs (`@protegey/sdk`, PHP, Java) instead.
+
+## Scope
+
+This SDK wraps only the client-side part of the partner API:
+
+| SDK call | Endpoint |
+|---|---|
+| `device.identify()` | `POST /partner-api/device-events` |
+| `behavioral.report()` | `POST /partner-api/behavioral-events` |
+| `kyc.startSession()` / `presentVerification()` | `POST /partner-api/kyc/sessions` |
+| `kyc.getSession()` | `GET /partner-api/kyc/sessions/:sessionId` |
+| `transactions.report()` (sandbox/testing only, see above) | `POST /partner-api/transactions` |
+
+Everything else — KYB applicants, alerts (list/update/convert-to-case/flag-transaction),
+transaction queries, KYC review overrides, sanctions screening, the shared fraud signal check and
+webhook signature verification — is a back-office job and belongs on your backend, with a
+server-side SDK. Webhooks (`X-Signature` = hex HMAC-SHA256 of `"{X-Timestamp}.{rawBody}"`) must be
+verified with your webhook secret, which must never ship in an app.
+
+Errors: any non-2xx response throws `ProtegeyApiException` (`status`, `message`, and `errorCode`
+when the backend sends one — `PARTNER_SUSPENDED` / `PARTNER_CONTRACT_REQUIRED` on 403). Sandbox
+keys are capped at 10 KYC sessions and 100 transactions per UTC day (400 once exceeded). A key is
+live or sandbox depending on which one you generated in the portal — nothing in this SDK selects
+the mode.
 
 ## `baseUrl` — no default, on purpose
 
@@ -111,6 +138,8 @@ fvm flutter test
 ## Security note
 
 Your API key is used directly from your app — the same key your backend would otherwise use
-server-side. Keep it out of source control and public repos the same way you would any other
+server-side. The partner API has no restricted/publishable key type today: whoever extracts the
+key from your app bundle can call every partner-api endpoint, including the back-office ones listed
+under Scope. Keep it out of source control and public repos the same way you would any other
 secret. Protegey does not perform request rate-limiting or origin/bundle-id allowlisting on your
 behalf today.
