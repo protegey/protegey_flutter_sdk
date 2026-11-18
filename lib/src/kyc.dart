@@ -3,7 +3,8 @@ import 'client.dart';
 class StartKycSessionResult {
   final String sessionId;
 
-  /// Hosted verification link — send it to your user however you like (SMS, email, in-app).
+  /// Hosted biometric capture link — single-use, valid for 30 minutes. Send it to your user however
+  /// you like (SMS, email, in-app), or let `presentVerification()` open it.
   final String url;
 
   const StartKycSessionResult({required this.sessionId, required this.url});
@@ -34,15 +35,23 @@ KycOutcome _kycOutcomeFromJson(String? value) {
   }
 }
 
-/// Same shape as the outbound KYC webhook payload, minus eventId — returned by
-/// [KycModule.getSession], the webhook polling fallback: delivery is best-effort (one retry, no
-/// queue), so this is the only way to be certain of a session's current status.
+/// Returned by [KycModule.getSession] — the polling fallback for the `kyc.status_changed` webhook.
+/// Webhook delivery is retried (up to 5 attempts over ~3 h), but it only fires on a biometric result
+/// (not on a manual review override) and its `sessionId` field is always null — partners can only
+/// correlate it on `externalUserId`. Polling this is the only way to be certain of a session's
+/// current status.
 class KycSessionStatus {
   final String sessionId;
   final String? externalUserId;
+
+  /// UPPER_SNAKE_CASE on the wire: 'NOT_STARTED' | 'IN_PROGRESS' | 'AWAITING_USER' | 'IN_REVIEW' |
+  /// 'APPROVED' | 'DECLINED' | 'RESUBMITTED' | 'ABANDONED' | 'EXPIRED' | 'KYC_EXPIRED'. In practice
+  /// a biometric session goes IN_PROGRESS → APPROVED / IN_REVIEW / DECLINED.
   final String status;
 
-  /// Typed convenience mirror of decision['outcome'] — see [KycOutcome].
+  /// Typed mirror of the response's top-level `outcome` — see [KycOutcome]. A manual review
+  /// override keeps the original outcome, so this can stay [KycOutcome.manual] while [status] is
+  /// 'APPROVED'.
   final KycOutcome outcome;
   final Map<String, dynamic>? decision;
 
@@ -136,7 +145,8 @@ class KycModule {
   }
 
   /// Polling fallback for the webhook — call this if you're not sure a webhook delivery ever
-  /// arrived (best-effort: one retry, no queue). [sessionId] is the value returned by [startSession].
+  /// arrived. [sessionId] is the value returned by [startSession]. Throws a 404
+  /// `ProtegeyApiException` for an unknown session.
   Future<KycSessionStatus> getSession(String sessionId) async {
     final response = await _http.get('/partner-api/kyc/sessions/${Uri.encodeComponent(sessionId)}');
     return KycSessionStatus.fromJson(response);

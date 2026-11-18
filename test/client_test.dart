@@ -71,6 +71,21 @@ void main() {
       );
     });
 
+    test('exposes the backend errorCode on a gating 403', () async {
+      final mock = MockClient((request) async {
+        return http.Response(jsonEncode({'errorCode': 'PARTNER_CONTRACT_REQUIRED', 'message': 'Your account has no billing contract configured yet.'}), 403);
+      });
+
+      final client = ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock);
+      expect(
+        () => client.post('/foo', {}),
+        throwsA(isA<ProtegeyApiException>()
+            .having((e) => e.status, 'status', 403)
+            .having((e) => e.errorCode, 'errorCode', 'PARTNER_CONTRACT_REQUIRED')
+            .having((e) => e.message, 'message', 'Your account has no billing contract configured yet.')),
+      );
+    });
+
     test('joins an array-shaped validation error message', () async {
       final mock = MockClient((request) async {
         return http.Response(

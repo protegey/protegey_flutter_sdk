@@ -21,7 +21,8 @@ class DeviceAttributes {
   /// Often fractional on real devices (e.g. 2.625, 3.5) — never assume an integer.
   final double? devicePixelRatio;
 
-  /// "wifi" | "cellular" | "ethernet" | "vpn" | "none" | "unknown" — from connectivity_plus.
+  /// "wifi" | "cellular" | "ethernet" | "vpn" | "unknown" per the backend docs (not enforced
+  /// server-side) — from connectivity_plus, which can also report "none" when offline.
   final String? connectionType;
 
   /// True only when connectivity_plus itself reports the active transport as VPN — not a guess.
@@ -30,6 +31,13 @@ class DeviceAttributes {
   /// 0-100, from battery_plus.
   final int? batteryLevel;
   final bool? isCharging;
+
+  // Accepted by the backend but never auto-collected by this SDK (no already-adopted plugin
+  // exposes them — see fingerprint.dart). Pass them yourself via `deviceAttributes` if you have them.
+  final int? cpuCores;
+  final int? totalMemoryMb;
+  final int? totalStorageMb;
+  final int? freeStorageMb;
 
   const DeviceAttributes({
     this.platform,
@@ -49,6 +57,10 @@ class DeviceAttributes {
     this.isVpnActive,
     this.batteryLevel,
     this.isCharging,
+    this.cpuCores,
+    this.totalMemoryMb,
+    this.totalStorageMb,
+    this.freeStorageMb,
   });
 
   DeviceAttributes mergeOver(DeviceAttributes base) {
@@ -70,6 +82,10 @@ class DeviceAttributes {
       isVpnActive: isVpnActive ?? base.isVpnActive,
       batteryLevel: batteryLevel ?? base.batteryLevel,
       isCharging: isCharging ?? base.isCharging,
+      cpuCores: cpuCores ?? base.cpuCores,
+      totalMemoryMb: totalMemoryMb ?? base.totalMemoryMb,
+      totalStorageMb: totalStorageMb ?? base.totalStorageMb,
+      freeStorageMb: freeStorageMb ?? base.freeStorageMb,
     );
   }
 
@@ -91,6 +107,10 @@ class DeviceAttributes {
         if (isVpnActive != null) 'isVpnActive': isVpnActive,
         if (batteryLevel != null) 'batteryLevel': batteryLevel,
         if (isCharging != null) 'isCharging': isCharging,
+        if (cpuCores != null) 'cpuCores': cpuCores,
+        if (totalMemoryMb != null) 'totalMemoryMb': totalMemoryMb,
+        if (totalStorageMb != null) 'totalStorageMb': totalStorageMb,
+        if (freeStorageMb != null) 'freeStorageMb': freeStorageMb,
       };
 }
 
@@ -284,8 +304,17 @@ class TransactionInput {
 
 class ReportTransactionResult {
   final String transactionId;
+
+  /// 'CLEAR' | 'REVIEW' | 'BLOCKED'. If rule evaluation times out (3 s fail-safe) the backend
+  /// answers 'REVIEW' with riskScore 50.
   final String decision;
+
+  /// 0-100.
   final int riskScore;
+
+  /// Raw alert objects as returned by the backend (`status` e.g. 'OPEN', `decisionVerdict`
+  /// 'BLOCK' | 'STEP_UP' | 'ESCALATE' | 'ALERT' | null) — left untyped on purpose, since triaging
+  /// alerts is a server-side job.
   final List<Map<String, dynamic>> alerts;
   final DeviceAction? deviceAction;
 
@@ -301,7 +330,7 @@ class ReportTransactionResult {
     return ReportTransactionResult(
       transactionId: json['transactionId'] as String,
       decision: json['decision'] as String,
-      riskScore: json['riskScore'] as int,
+      riskScore: (json['riskScore'] as num).toInt(),
       alerts: (json['alerts'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>(),
       deviceAction: deviceActionFromWire(json['deviceAction'] as String?),
     );
@@ -313,8 +342,12 @@ class ProtegeyApiException implements Exception {
   final int status;
   final String message;
 
-  const ProtegeyApiException(this.status, this.message);
+  /// Machine-readable code when the backend sends one — currently 'PARTNER_SUSPENDED' or
+  /// 'PARTNER_CONTRACT_REQUIRED' (both 403, mutating calls only). Null otherwise.
+  final String? errorCode;
+
+  const ProtegeyApiException(this.status, this.message, {this.errorCode});
 
   @override
-  String toString() => 'ProtegeyApiException($status): $message';
+  String toString() => 'ProtegeyApiException($status${errorCode != null ? ', $errorCode' : ''}): $message';
 }

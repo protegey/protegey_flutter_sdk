@@ -43,7 +43,7 @@ class DeviceModule {
     return IdentifyResult(
       recorded: response['recorded'] as bool? ?? false,
       action: deviceActionFromWire(response['action'] as String?),
-      riskScore: response['riskScore'] as int?,
+      riskScore: (response['riskScore'] as num?)?.toInt(),
       visitorId: computed.visitorId,
     );
   }

@@ -100,7 +100,7 @@ void main() {
       });
       final transactions = TransactionsModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
 
-      await transactions.report(TransactionInput(
+      await transactions.report(const TransactionInput(
         externalTransactionId: 'tx-1',
         externalCustomerId: 'cust-1',
         direction: TransactionDirection.debit,
@@ -166,7 +166,7 @@ void main() {
       });
       final transactions = TransactionsModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
 
-      await transactions.report(TransactionInput(
+      await transactions.report(const TransactionInput(
         externalTransactionId: 'tx-1',
         externalCustomerId: 'cust-1',
         direction: TransactionDirection.debit,
@@ -190,7 +190,7 @@ void main() {
       });
       final transactions = TransactionsModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
 
-      await transactions.report(TransactionInput(
+      await transactions.report(const TransactionInput(
         externalTransactionId: 'tx-1',
         externalCustomerId: 'cust-1',
         customerName: 'Awa Diallo',

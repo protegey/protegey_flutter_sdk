@@ -63,7 +63,7 @@ class ProtegeyHttpClient {
     if (response.statusCode < 200 || response.statusCode >= 300) {
       final rawMessage = data?['message'];
       final message = rawMessage is List ? rawMessage.join(', ') : (rawMessage?.toString() ?? response.reasonPhrase ?? 'Request failed');
-      throw ProtegeyApiException(response.statusCode, message);
+      throw ProtegeyApiException(response.statusCode, message, errorCode: data?['errorCode'] as String?);
     }
 
     return data ?? {};
