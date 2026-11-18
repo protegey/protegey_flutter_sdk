@@ -44,12 +44,6 @@ class _ProtegeyKycViewState extends State<ProtegeyKycView> {
     super.initState();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      // Temporary diagnostic (2026-11-16) — forwards the embedded facetec-web page's own
-      // console.log/console.error (see that repo's facetecProxy.ts/sdkEventLog.ts) into this
-      // app's debug output, since there was previously no way to see what the page was doing
-      // during a "submits document, spins forever" report without a physical-device browser
-      // inspector attached.
-      ..setOnConsoleMessage((message) => debugPrint('[facetec-web console] ${message.level.name}: ${message.message}'))
       ..loadRequest(Uri.parse(widget.url));
     // Without this, webview_flutter silently DENIES every camera/microphone request from the
     // page by default — the FaceTec capture flow then fails with its own "camera access
