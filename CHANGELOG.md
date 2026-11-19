@@ -1,3 +1,15 @@
+## 0.9.0
+
+Aligned with the partner API on backend `dev` (2026-11-19).
+
+- New `protegey.cashDeposits` module: `record()` (`POST /partner-api/cash-deposits`), `list()` with every filter the backend accepts (`page`, `limit` up to 100, `dateFrom`, `dateTo`, `externalCustomerId`, `minAmount`, `maxAmount`, `currency`, `channel`, `decision`, `branchId`, `agentId`) and `get()` by Protegey id or `externalTransactionId`. A reused `externalTransactionId` throws a 409 `ProtegeyApiException`. `CashDeposit.amount` is a `String`, as the API returns it.
+- KYC: `KycSessionStatus` gains `recommendation` (`KycRecommendation` approve / review / reject, null before a result) and `images` (`KycImages`: `documentFront`, `documentBack`, `selfie`, `documentFaceCrop`, each a `KycImage` with `url` + `expiresAt`, or null). The links are valid 1 hour and re-issued on every GET.
+- KYC: new `kyc.listSessions()` (`GET /partner-api/kyc/sessions`, filters `externalUserId` exact match, `status`, `search`, `page`, `limit`), returning `KycSessionSummary` rows.
+- KYC: new `kyc.updateSession()` (`PATCH /partner-api/kyc/sessions/:id`) with `status` (`KycReviewStatus`) and `reviewNote`.
+- New shared `ProtegeyPage<T>` for paginated responses. `ProtegeyHttpClient.get()` accepts query parameters and the client gains `patch()`.
+- `TransactionChannel`'s wire-value extension is now public (`TransactionChannelWire`).
+- Docs: corrected the webhook notes. `kyc.status_changed` also fires on manual status changes, its `sessionId` is the session id (not null), and it carries `recommendation`. `kyb.status_changed.submissionStatus` and `decision.manualReview.previousStatus/newStatus` are UPPER_SNAKE_CASE. Retries: 5 attempts over about 3 h, deduplicate on `eventId`.
+
 ## 0.8.0
 
 Audited against the current partner API (backend `prod`, 2026-11-18). Wire format was already correct for every endpoint this SDK calls; this release fills the remaining gaps.

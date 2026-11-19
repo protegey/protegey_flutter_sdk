@@ -43,10 +43,29 @@ class ProtegeyHttpClient {
     return _parseResponse(response);
   }
 
-  Future<Map<String, dynamic>> get(String path) async {
+  /// [query] entries with a null value are dropped, so callers can pass every optional filter
+  /// as-is.
+  Future<Map<String, dynamic>> get(String path, {Map<String, Object?>? query}) async {
+    final params = <String, String>{
+      for (final entry in (query ?? const <String, Object?>{}).entries)
+        if (entry.value != null) entry.key: entry.value.toString(),
+    };
+    final uri = Uri.parse('$baseUrl$path');
     final response = await _httpClient.get(
-      Uri.parse('$baseUrl$path'),
+      params.isEmpty ? uri : uri.replace(queryParameters: params),
       headers: {'x-api-key': apiKey},
+    );
+    return _parseResponse(response);
+  }
+
+  Future<Map<String, dynamic>> patch(String path, Map<String, dynamic> body) async {
+    final response = await _httpClient.patch(
+      Uri.parse('$baseUrl$path'),
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+      },
+      body: jsonEncode(body),
     );
     return _parseResponse(response);
   }

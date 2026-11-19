@@ -161,7 +161,9 @@ extension on TransactionDirection {
 /// from an API-initiated transfer. Omit if not meaningful for your integration.
 enum TransactionChannel { branch, atm, pos, online, mobileApp, ussd, agent, api, callCenter }
 
-extension on TransactionChannel {
+/// Wire value of a [TransactionChannel] as the backend's request DTOs accept it (lower snake case,
+/// e.g. 'mobile_app'). Responses echo the channel back UPPER_SNAKE_CASE ('MOBILE_APP').
+extension TransactionChannelWire on TransactionChannel {
   String get wireValue => switch (this) {
         TransactionChannel.branch => 'branch',
         TransactionChannel.atm => 'atm',
@@ -333,6 +335,27 @@ class ReportTransactionResult {
       riskScore: (json['riskScore'] as num).toInt(),
       alerts: (json['alerts'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>(),
       deviceAction: deviceActionFromWire(json['deviceAction'] as String?),
+    );
+  }
+}
+
+/// A page of results — the partner API's `{ data, total, page, limit, totalPages }` envelope.
+class ProtegeyPage<T> {
+  final List<T> data;
+  final int total;
+  final int page;
+  final int limit;
+  final int totalPages;
+
+  const ProtegeyPage({required this.data, required this.total, required this.page, required this.limit, required this.totalPages});
+
+  factory ProtegeyPage.fromJson(Map<String, dynamic> json, T Function(Map<String, dynamic>) parse) {
+    return ProtegeyPage(
+      data: (json['data'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>().map(parse).toList(),
+      total: (json['total'] as num?)?.toInt() ?? 0,
+      page: (json['page'] as num?)?.toInt() ?? 1,
+      limit: (json['limit'] as num?)?.toInt() ?? 20,
+      totalPages: (json['totalPages'] as num?)?.toInt() ?? 1,
     );
   }
 }
