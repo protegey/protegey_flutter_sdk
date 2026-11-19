@@ -108,7 +108,7 @@ final one = await protegey.cashDeposits.get('dep-0001'); // Protegey id or your 
 
 Webhooks are verified on your backend, never in the app, but their shape matters for what you poll:
 
-- `kyc.status_changed` fires on a biometric result **and** on every manual status change (portal or
+- `kyc.status_changed` fires on an automated verification result **and** on every manual status change (portal or
   `PATCH /partner-api/kyc/sessions/:id`). Its `sessionId` is the same id `startSession()` returns,
   and it carries `recommendation` next to `status`.
 - `kyb.status_changed` carries `submissionStatus` in UPPER_SNAKE_CASE, like every other status field.

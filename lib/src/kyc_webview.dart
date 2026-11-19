@@ -5,8 +5,8 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import 'kyc.dart';
 
-/// Shows Protegey's own biometric-hosted KYC capture flow inside the host app — the end user never
-/// leaves the partner's app. Capture happens in Protegey's own capture-web app, never a third-
+/// Shows Protegey's own hosted KYC capture flow inside the host app — the end user never
+/// leaves the partner's app. Capture happens in Protegey's own identity verification app, never a third-
 /// party redirect, but there's still no completion event to watch navigation for, so this
 /// doesn't watch navigation: it polls [KycModule.getSession] in the background (the same
 /// best-effort polling fallback [KycModule] already documents) and reports every status change via
@@ -46,7 +46,7 @@ class _ProtegeyKycViewState extends State<ProtegeyKycView> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..loadRequest(Uri.parse(widget.url));
     // Without this, webview_flutter silently DENIES every camera/microphone request from the
-    // page by default — the biometric capture flow then fails with its own "camera access
+    // page by default — the capture flow then fails with its own "camera access
     // denied" screen, which looks like a permission bug but is really just a missing grant here.
     // Safe to auto-grant unconditionally: this controller only ever loads our own KYC session URL.
     _controller.platform.setOnPlatformPermissionRequest((request) => request.grant());
@@ -82,8 +82,8 @@ class _ProtegeyKycViewState extends State<ProtegeyKycView> {
 /// [ProtegeyKycPresentation.presentVerification] uses to start its delayed auto-close timer (see
 /// its own doc comment) — kept here as a public reference too, for host apps building a custom
 /// presentation around [ProtegeyKycView] directly. 'IN_REVIEW' IS terminal here — it's what a
-/// concluded biometric session reports when the match confidence is below the auto-approve
-/// threshold (decision.outcome == 'MANUAL'); biometric is done, a human just needs to review it
+/// concluded verification session reports when the match confidence is below the auto-approve
+/// threshold (decision.outcome == 'MANUAL'); the automated check is done, a human just needs to review it
 /// later — the sheet shouldn't stay open waiting for that.
 ///
 /// Uppercase since the partner-api backend moved every status/decision field to UPPER_SNAKE_CASE
@@ -91,7 +91,7 @@ class _ProtegeyKycViewState extends State<ProtegeyKycView> {
 const _terminalKycStatuses = {'APPROVED', 'DECLINED', 'IN_REVIEW', 'ABANDONED', 'EXPIRED', 'KYC_EXPIRED'};
 
 /// How long to leave the sheet open after a terminal status first arrives, before auto-closing it.
-/// The webview's own result screen (protegey-capture-web's ResultScreen.tsx) shows a matching
+/// The webview's own result screen (Protegey's hosted verification page) shows a matching
 /// countdown and attempts to close itself via window.close() — which most WebView hosts silently
 /// ignore, this app's included, so this timer is the one that actually closes the sheet. It runs a
 /// couple seconds longer than that page's own countdown so it acts as a safety net the page's
