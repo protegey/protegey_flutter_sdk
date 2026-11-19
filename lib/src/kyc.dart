@@ -4,7 +4,7 @@ import 'types.dart';
 class StartKycSessionResult {
   final String sessionId;
 
-  /// Hosted FaceTec capture link — single-use, valid for 30 minutes. Send it to your user however
+  /// Hosted Protegey identity verification link — single-use, valid for 30 minutes. Send it to your user however
   /// you like (SMS, email, in-app), or let `presentVerification()` open it.
   final String url;
 
@@ -15,11 +15,11 @@ class StartKycSessionResult {
   }
 }
 
-/// 'success' = confident match, auto-approved. 'manual' = FaceTec's hard checks (liveness, ID
+/// 'success' = confident match, auto-approved. 'manual' = the hard checks (liveness, ID
 /// scan) passed but the match confidence was below the configurable auto-approve threshold (80%
 /// by default) — a human needs to review it; reported as session status 'IN_REVIEW'. 'failed' = a
 /// hard check itself failed (liveness never proven, ID scan failed, or no face match at all);
-/// reported as session status 'DECLINED'. `unknown` before a FaceTec result has come back yet, or
+/// reported as session status 'DECLINED'. `unknown` before a verification result has come back yet, or
 /// for a status value this SDK version doesn't recognize.
 enum KycOutcome { success, manual, failed, unknown }
 
@@ -36,10 +36,10 @@ KycOutcome _kycOutcomeFromJson(String? value) {
   }
 }
 
-/// Protegey's own verdict on a session, from FaceTec's result: [approve] (outcome SUCCESS),
+/// Protegey's own verdict on a session, from the automated verification result: [approve] (outcome SUCCESS),
 /// [review] (MANUAL), [reject] (FAILED). It never changes after a manual override — the session's
 /// `status` is the final decision, this is what Protegey recommended. Null on the wire (and
-/// `null` here) before a FaceTec result exists.
+/// `null` here) before a verification result exists.
 enum KycRecommendation { approve, review, reject }
 
 KycRecommendation? _kycRecommendationFromJson(Object? value) {
@@ -115,7 +115,7 @@ class KycSessionStatus {
 
   /// UPPER_SNAKE_CASE on the wire: 'NOT_STARTED' | 'IN_PROGRESS' | 'AWAITING_USER' | 'IN_REVIEW' |
   /// 'APPROVED' | 'DECLINED' | 'RESUBMITTED' | 'ABANDONED' | 'EXPIRED' | 'KYC_EXPIRED'. In practice
-  /// a FaceTec session goes IN_PROGRESS → APPROVED / IN_REVIEW / DECLINED.
+  /// a verification session goes IN_PROGRESS → APPROVED / IN_REVIEW / DECLINED.
   final String status;
 
   /// Typed mirror of the response's top-level `outcome` — see [KycOutcome]. A manual review
@@ -127,19 +127,19 @@ class KycSessionStatus {
   /// differ after a manual override); this never changes.
   final KycRecommendation? recommendation;
 
-  /// FaceTec's decision blob. A manual override adds `decision['manualReview']`
+  /// The verification decision blob. A manual override adds `decision['manualReview']`
   /// (`reviewedBy`, `reviewedAt`, `previousStatus`, `newStatus` — both UPPER_SNAKE_CASE — and `note`).
   final Map<String, dynamic>? decision;
 
-  /// The verified user's full name, as read off their scanned ID document — null until FaceTec
-  /// has produced a result.
+  /// The verified user's full name, as read off their scanned ID document — null until the
+  /// verification has produced a result.
   final String? fullName;
 
-  /// The scanned document's type (e.g. national ID, passport), as FaceTec identified it — null
+  /// The scanned document's type (e.g. national ID, passport), as identified during verification — null
   /// until a result is available.
   final String? documentType;
 
-  /// ISO-3166 alpha-2 country, extracted from the FaceTec decision once available.
+  /// ISO-3166 alpha-2 country, extracted from the verification decision once available.
   final String? country;
 
   /// 0-100 liveness-check score, once available.

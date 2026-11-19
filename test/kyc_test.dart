@@ -77,7 +77,7 @@ void main() {
         'externalUserId': 'user-123',
         'status': 'IN_REVIEW',
         'outcome': 'MANUAL',
-        'decision': {'source': 'facetec', 'outcome': 'MANUAL', 'passed': true, 'confidenceScore': 0.4286, 'livenessScore': 100, 'matchScore': 43},
+        'decision': {'source': 'protegey', 'outcome': 'MANUAL', 'passed': true, 'confidenceScore': 0.4286, 'livenessScore': 100, 'matchScore': 43},
         'fullName': 'Jane Doe',
         'documentType': 'ID_CARD',
         'country': 'CM',
@@ -100,7 +100,7 @@ void main() {
       expect(status.documentBackPhoto, isNull);
     });
 
-    test('outcome is unknown before a FaceTec result exists', () {
+    test('outcome is unknown before a verification result exists', () {
       final status = KycSessionStatus.fromJson({'sessionId': 'enr-1', 'externalUserId': 'u', 'status': 'IN_PROGRESS', 'outcome': null, 'decision': null});
       expect(status.outcome, KycOutcome.unknown);
     });

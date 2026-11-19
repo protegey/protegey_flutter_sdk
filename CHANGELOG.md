@@ -25,7 +25,7 @@ Audited against the current partner API (backend `prod`, 2026-11-18). Wire forma
 - `KycSessionStatus` (returned by `kyc.getSession()` / `presentVerification()`) now parses `fullName`, `documentType`, `country`, `livenessScore`, `faceMatchScore`, `documentPhoto`, `documentBackPhoto`, `selfiePhoto`, `documentFaceCrop` — these were already in the backend response but silently dropped before.
 - `kyc.startSession()` / `presentVerification()` gain optional `email`/`phone` — never Protegey-verified, feeds identity-resolution's cross-partner matching. Omit either if unknown.
 - `TransactionInput.segment` is now a `CustomerSegment` enum (`kyc1`/`kyc2`/`agent`/`superAgent`/`merchant`/`corporate`) instead of a loose `String?`, matching the closed set the backend validates against — same pattern as `TransactionDirection`/`TransactionChannel`.
-- Docs: fixed stale "Didit" references (FaceTec, via Protegey's own facetec-web app, has been the only capture flow for a while) and a stale `keverd` backend path in doc comments. No behavior change.
+- Docs: fixed stale "Didit" references (Protegey's own hosted identity verification app has been the only capture flow for a while) and a stale `keverd` backend path in doc comments. No behavior change.
 - Docs: `behavioral.status` comments now show the actual uppercase wire value (`'LEARNING'`/`'SCORED'`) instead of a stale lowercase one.
 
 ## 0.6.0
