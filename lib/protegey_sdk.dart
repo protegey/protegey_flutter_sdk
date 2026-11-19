@@ -5,13 +5,25 @@ library protegey_sdk;
 import 'package:http/http.dart' as http;
 
 import 'src/behavioral.dart';
+import 'src/cash_deposits.dart';
 import 'src/client.dart';
 import 'src/device.dart';
 import 'src/kyc.dart';
 import 'src/transactions.dart';
 
 export 'src/types.dart';
-export 'src/kyc.dart' show KycModule, StartKycSessionResult, KycSessionStatus, KycOutcome;
+export 'src/kyc.dart'
+    show
+        KycModule,
+        StartKycSessionResult,
+        KycSessionStatus,
+        KycSessionSummary,
+        KycOutcome,
+        KycRecommendation,
+        KycReviewStatus,
+        KycImage,
+        KycImages;
+export 'src/cash_deposits.dart' show CashDepositsModule, CashDepositInput, RecordCashDepositResult, CashDeposit;
 export 'src/kyc_webview.dart' show ProtegeyKycView, ProtegeyKycPresentation;
 export 'src/behavioral.dart'
     show
@@ -38,11 +50,12 @@ export 'src/behavioral.dart'
 /// environments and can change independently of this package). See [ProtegeyHttpClient]'s doc
 /// comment for why.
 ///
-/// Namespaced (`.device`, `.transactions`, `.kyc`, `.behavioral`) so more of the partner-api
+/// Namespaced (`.device`, `.transactions`, `.cashDeposits`, `.kyc`, `.behavioral`) so more of the partner-api
 /// surface can be added later without breaking this shape.
 class Protegey {
   final DeviceModule device;
   final TransactionsModule transactions;
+  final CashDepositsModule cashDeposits;
   final KycModule kyc;
   final BehavioralModule behavioral;
 
@@ -52,6 +65,7 @@ class Protegey {
   Protegey._(ProtegeyHttpClient http)
       : device = DeviceModule(http),
         transactions = TransactionsModule(http),
+        cashDeposits = CashDepositsModule(http),
         kyc = KycModule(http),
         behavioral = BehavioralModule(http);
 }
