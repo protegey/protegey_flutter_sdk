@@ -58,8 +58,7 @@ class LivenessSession {
   /// The KYC verification (session id) the face was matched against — re-verification only.
   final String? referenceEnrollmentId;
 
-  /// Earlier KYC verifications of yours with the same face (liveness checks only) — null when the
-  /// search did not run.
+  /// Reserved — not populated at the moment (always null).
   final List<String>? duplicateFaceEnrollmentIds;
   final int attempts;
 

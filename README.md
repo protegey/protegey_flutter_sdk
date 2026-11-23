@@ -58,6 +58,21 @@ if (status != null) {
 // Find a customer's sessions by your own id (exact match), newest first.
 final sessions = await protegey.kyc.listSessions(externalUserId: 'cust-9981');
 
+// 3D liveness — a separate, paid product (KYC above is unaffected). Same bottom-sheet pattern:
+// presentLiveness() checks that a real, live person is in front of the camera;
+// presentReverification() also checks it is the same person as their KYC (3D:3D match).
+// Resolves with the final session, or null if closed first. The end user sees a success/failure
+// screen; read the result itself from the session.
+final check = await protegey.liveness.presentLiveness(context, externalUserId: 'cust-9981');
+try {
+  final again = await protegey.liveness.presentReverification(context, externalUserId: 'cust-9981');
+  // again?.livenessProven, again?.matched (true = same person as the KYC), again?.status
+} on ProtegeyApiException catch (e) {
+  if (e.errorCode == no3dEnrollmentErrorCode) {
+    // No KYC face on record for this customer — run a KYC verification first.
+  }
+}
+
 // Behavioral biometrics — aggregated keystroke/touch/navigation metadata only, never raw content
 final behavioral = await protegey.behavioral.report(ReportBehavioralEventInput(
   externalCustomerId: 'cust-9981',
@@ -128,6 +143,8 @@ This SDK wraps only the client-side part of the partner API:
 | `kyc.getSession()` | `GET /partner-api/kyc/sessions/:sessionId` |
 | `kyc.listSessions()` | `GET /partner-api/kyc/sessions` |
 | `kyc.updateSession()` (review override, back-office) | `PATCH /partner-api/kyc/sessions/:sessionId` |
+| `liveness.startSession()` / `startReverification()` / `presentLiveness()` / `presentReverification()` | `POST /partner-api/liveness/sessions` |
+| `liveness.getSession()` / `listSessions()` | `GET /partner-api/liveness/sessions/:sessionId`, `GET /partner-api/liveness/sessions` |
 | `transactions.report()` (sandbox/testing only, see above) | `POST /partner-api/transactions` |
 | `cashDeposits.record()` / `list()` / `get()` (sandbox/back-office, see above) | `POST/GET /partner-api/cash-deposits`, `GET /partner-api/cash-deposits/:id` |
 
@@ -138,7 +155,9 @@ server-side SDK. Webhooks (`X-Signature` = hex HMAC-SHA256 of `"{X-Timestamp}.{r
 verified with your webhook secret, which must never ship in an app.
 
 Errors: any non-2xx response throws `ProtegeyApiException` (`status`, `message`, and `errorCode`
-when the backend sends one — `PARTNER_SUSPENDED` / `PARTNER_CONTRACT_REQUIRED` on 403). Sandbox
+when the backend sends one — `PARTNER_SUSPENDED` / `PARTNER_CONTRACT_REQUIRED` on 403, and
+`NO_3D_ENROLLMENT` (`no3dEnrollmentErrorCode`) on a liveness reverification of someone with no KYC
+face on record). Sandbox
 keys are capped at 10 KYC sessions and 100 transactions per UTC day (400 once exceeded). A key is
 live or sandbox depending on which one you generated in the portal — nothing in this SDK selects
 the mode.
