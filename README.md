@@ -60,7 +60,7 @@ final sessions = await protegey.kyc.listSessions(externalUserId: 'cust-9981');
 
 // 3D liveness — a separate, paid product (KYC above is unaffected). Same bottom-sheet pattern:
 // presentLiveness() checks that a real, live person is in front of the camera;
-// presentReverification() also checks it is the same person as their KYC (3D:3D match).
+// presentReverification() also checks it is the same person as their KYC (face match).
 // Resolves with the final session, or null if closed first. The end user sees a success/failure
 // screen; read the result itself from the session.
 final check = await protegey.liveness.presentLiveness(context, externalUserId: 'cust-9981');

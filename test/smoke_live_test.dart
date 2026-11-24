@@ -1,5 +1,5 @@
 // Ad-hoc live smoke test against a local backend — not part of the regular test suite (no
-// network in CI). Run manually against a locally running protegey-backend + seeded demo data:
+// network in CI). Run manually against a locally running Protegey API + seeded demo data:
 //   fvm flutter test test/smoke_live_test.dart --dart-define=PROTEGEY_API_KEY=your-local-demo-key
 import 'package:flutter_test/flutter_test.dart';
 import 'package:protegey_sdk/protegey_sdk.dart';

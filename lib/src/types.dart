@@ -1,5 +1,4 @@
-/// Mirrors the backend's DeviceAttributesDto — a closed, all-optional list. Keep in sync with
-/// protegey-backend/src/device-intelligence/dto/device-attributes.dto.ts.
+/// Mirrors the backend's DeviceAttributesDto — a closed, all-optional list.
 class DeviceAttributes {
   final String? platform;
   final String? osVersion;

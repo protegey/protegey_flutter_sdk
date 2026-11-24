@@ -11,7 +11,7 @@ import 'types.dart';
 const String no3dEnrollmentErrorCode = 'NO_3D_ENROLLMENT';
 
 /// 'LIVENESS': a selfie-only 3D liveness check. 'REVERIFICATION': a 3D liveness check, then a
-/// 3D:3D match against the face enrolled during the person's KYC verification.
+/// face match against the face enrolled during the person's KYC verification.
 enum LivenessMode { liveness, reverification }
 
 LivenessMode _modeFromJson(Object? value) => value == 'REVERIFICATION' ? LivenessMode.reverification : LivenessMode.liveness;
@@ -48,11 +48,11 @@ class LivenessSession {
   /// Null until a scan was evaluated. True: a real, live person was in front of the camera.
   final bool? livenessProven;
 
-  /// Re-verification only: whether the face is the same person as their KYC verification (3D:3D
+  /// Re-verification only: whether the face is the same person as their KYC verification (face
   /// match). Null for a plain liveness check, or before a result.
   final bool? matched;
 
-  /// Re-verification only: the 3D:3D match level (0 = different person, 15 = same person).
+  /// Re-verification only: the match level (higher means a stronger match; 0 means a different person).
   final int? matchLevel;
 
   /// The KYC verification (session id) the face was matched against — re-verification only.

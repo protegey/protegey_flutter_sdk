@@ -1,6 +1,6 @@
 ## 0.9.0
 
-Aligned with the partner API on backend `dev` (2026-11-19).
+Aligned with the partner API (2026-11-19).
 
 - New `protegey.cashDeposits` module: `record()` (`POST /partner-api/cash-deposits`), `list()` with every filter the backend accepts (`page`, `limit` up to 100, `dateFrom`, `dateTo`, `externalCustomerId`, `minAmount`, `maxAmount`, `currency`, `channel`, `decision`, `branchId`, `agentId`) and `get()` by Protegey id or `externalTransactionId`. A reused `externalTransactionId` throws a 409 `ProtegeyApiException`. `CashDeposit.amount` is a `String`, as the API returns it.
 - KYC: `KycSessionStatus` gains `recommendation` (`KycRecommendation` approve / review / reject, null before a result) and `images` (`KycImages`: `documentFront`, `documentBack`, `selfie`, `documentFaceCrop`, each a `KycImage` with `url` + `expiresAt`, or null). The links are valid 1 hour and re-issued on every GET.
@@ -12,7 +12,7 @@ Aligned with the partner API on backend `dev` (2026-11-19).
 
 ## 0.8.0
 
-Audited against the current partner API (backend `prod`, 2026-11-18). Wire format was already correct for every endpoint this SDK calls; this release fills the remaining gaps.
+Audited against the current partner API (2026-11-18). Wire format was already correct for every endpoint this SDK calls; this release fills the remaining gaps.
 
 - `DeviceAttributes` gains `cpuCores`, `totalMemoryMb`, `totalStorageMb`, `freeStorageMb`, the last four fields of the backend's `DeviceAttributesDto`. They are not auto-collected; pass them via `deviceAttributes` if you have them.
 - `ProtegeyApiException` gains `errorCode`, filled from the backend's `errorCode` (`PARTNER_SUSPENDED`, `PARTNER_CONTRACT_REQUIRED` on 403).
@@ -25,7 +25,7 @@ Audited against the current partner API (backend `prod`, 2026-11-18). Wire forma
 - `KycSessionStatus` (returned by `kyc.getSession()` / `presentVerification()`) now parses `fullName`, `documentType`, `country`, `livenessScore`, `faceMatchScore`, `documentPhoto`, `documentBackPhoto`, `selfiePhoto`, `documentFaceCrop` — these were already in the backend response but silently dropped before.
 - `kyc.startSession()` / `presentVerification()` gain optional `email`/`phone` — never Protegey-verified, feeds identity-resolution's cross-partner matching. Omit either if unknown.
 - `TransactionInput.segment` is now a `CustomerSegment` enum (`kyc1`/`kyc2`/`agent`/`superAgent`/`merchant`/`corporate`) instead of a loose `String?`, matching the closed set the backend validates against — same pattern as `TransactionDirection`/`TransactionChannel`.
-- Docs: fixed stale "provider" references (Protegey's own hosted identity verification app has been the only capture flow for a while) and a stale `provider` backend path in doc comments. No behavior change.
+- Docs: fixed stale references to a previous provider (Protegey's own hosted identity verification app is the only capture flow) and a stale backend path in doc comments. No behavior change.
 - Docs: `behavioral.status` comments now show the actual uppercase wire value (`'LEARNING'`/`'SCORED'`) instead of a stale lowercase one.
 
 ## 0.6.0
