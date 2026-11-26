@@ -182,6 +182,27 @@ void main() {
       expect(body2.containsKey('accountBalanceBefore'), isFalse);
     });
 
+    test('parses the location Protegey used, and null when there was none', () async {
+      final withLocation = {
+        ..._successBody,
+        'location': {'latitude': 5.36, 'longitude': -4.008, 'accuracyMeters': 12, 'isMocked': true, 'gpsIpDistanceKm': 3, 'impliedTravelSpeedKmh': null, 'isNewGpsArea': true},
+      };
+      var body = withLocation;
+      final mock = MockClient((_) async => http.Response(jsonEncode(body), 200));
+      final transactions = TransactionsModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
+
+      final location = (await transactions.report(_baseInput())).location!;
+      expect(location.latitude, 5.36);
+      expect(location.accuracyMeters, 12);
+      expect(location.isMocked, isTrue);
+      expect(location.gpsIpDistanceKm, 3);
+      expect(location.impliedTravelSpeedKmh, isNull);
+      expect(location.isNewGpsArea, isTrue);
+
+      body = {..._successBody, 'location': null};
+      expect((await transactions.report(_baseInput())).location, isNull);
+    });
+
     test('passes location through when given, omits it otherwise', () async {
       http.Request? captured;
       final mock = MockClient((request) async {

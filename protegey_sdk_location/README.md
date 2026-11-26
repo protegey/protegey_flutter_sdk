@@ -50,6 +50,9 @@ await protegey.device.identify(externalCustomerId: 'cust-1', location: location)
 - **It never blocks your flow.** It waits at most 1.5 s (`timeout`) for a fresh fix, then falls back
   to the last known position. When location is off, denied or unavailable, it returns `null`:
   send the call without a location.
+- **Precise by default.** It asks for a GPS fix (`LocationAccuracy.high`, a few meters outdoors).
+  Pass `accuracy: LocationAccuracy.medium` to save battery (Wi-Fi/cell only, about 100 m). Indoors a
+  GPS fix can take a few seconds: raise `timeout` if you can wait.
 - **Transactions reuse it.** A transaction reported for the same customer within about 15 minutes
   of `identify(location: ...)` reuses that position, so your backend doesn't need to relay it.
   You can also pass it explicitly with `TransactionInput(location: ...)`.

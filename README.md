@@ -205,6 +205,11 @@ To read it, install the optional [`protegey_sdk_location`](protegey_sdk_location
 15 minutes reuses the location of the customer's last `identify()`. Protegey stores it rounded to
 about 100 m and erases it after 12 months.
 
+Nothing is shown to the user: the SDK has no location UI. Read the position silently when your
+app calls `identify()` or reports a transaction. The only prompt is the OS permission request,
+shown once, when your app decides. `ReportTransactionResult.location` tells your code which
+position Protegey used. The example app displays it only for the demo.
+
 ## Development
 
 This repo uses [fvm](https://fvm.app) to pin the Flutter version — see `.fvmrc`.

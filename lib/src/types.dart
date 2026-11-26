@@ -352,23 +352,71 @@ class ReportTransactionResult {
   final List<Map<String, dynamic>> alerts;
   final DeviceAction? deviceAction;
 
+  /// The GPS position this transaction was scored with, or `null` when it had none.
+  final TransactionLocation? location;
+
   const ReportTransactionResult({
     required this.transactionId,
     required this.decision,
     required this.riskScore,
     required this.alerts,
     required this.deviceAction,
+    this.location,
   });
 
   factory ReportTransactionResult.fromJson(Map<String, dynamic> json) {
+    final location = json['location'];
     return ReportTransactionResult(
       transactionId: json['transactionId'] as String,
       decision: json['decision'] as String,
       riskScore: (json['riskScore'] as num).toInt(),
       alerts: (json['alerts'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>(),
       deviceAction: deviceActionFromWire(json['deviceAction'] as String?),
+      location: location is Map<String, dynamic> ? TransactionLocation.fromJson(location) : null,
     );
   }
+}
+
+/// The GPS position Protegey used for a transaction — the one sent with it, or the one from a
+/// `device.identify(location:)` of the same customer in the previous 15 minutes — and the signals
+/// derived from it.
+class TransactionLocation {
+  /// Rounded to about 100 m (3 decimals); `null` once erased after 12 months.
+  final double? latitude;
+  final double? longitude;
+  final int? accuracyMeters;
+
+  /// The device reported a fake-GPS (mock location) provider.
+  final bool isMocked;
+
+  /// Distance between the GPS position and the IP address position.
+  final int? gpsIpDistanceKm;
+
+  /// Speed needed to come from this customer's previous GPS position.
+  final int? impliedTravelSpeedKmh;
+
+  /// No GPS-located transaction of this customer within 50 km over the last 90 days.
+  final bool? isNewGpsArea;
+
+  const TransactionLocation({
+    this.latitude,
+    this.longitude,
+    this.accuracyMeters,
+    required this.isMocked,
+    this.gpsIpDistanceKm,
+    this.impliedTravelSpeedKmh,
+    this.isNewGpsArea,
+  });
+
+  factory TransactionLocation.fromJson(Map<String, dynamic> json) => TransactionLocation(
+        latitude: (json['latitude'] as num?)?.toDouble(),
+        longitude: (json['longitude'] as num?)?.toDouble(),
+        accuracyMeters: (json['accuracyMeters'] as num?)?.toInt(),
+        isMocked: json['isMocked'] as bool? ?? false,
+        gpsIpDistanceKm: (json['gpsIpDistanceKm'] as num?)?.toInt(),
+        impliedTravelSpeedKmh: (json['impliedTravelSpeedKmh'] as num?)?.toInt(),
+        isNewGpsArea: json['isNewGpsArea'] as bool?,
+      );
 }
 
 /// A page of results — the partner API's `{ data, total, page, limit, totalPages }` envelope.

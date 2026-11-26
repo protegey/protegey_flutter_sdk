@@ -11,6 +11,7 @@ import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:protegey_sdk/protegey_sdk.dart';
 
+export 'package:geolocator/geolocator.dart' show LocationAccuracy;
 export 'package:protegey_sdk/protegey_sdk.dart' show DeviceLocation;
 
 /// Reads the device's position for `device.identify(location:)` and `TransactionInput.location`.
@@ -29,9 +30,13 @@ class ProtegeyLocation {
   ///
   /// Waits at most [timeout] for a fresh fix, then falls back to the last known position (which
   /// may be a few minutes old — its `capturedAt` says when it was taken).
+  ///
+  /// [accuracy] defaults to [LocationAccuracy.high] (GPS, a few meters outdoors). Pass
+  /// [LocationAccuracy.medium] to save battery: Wi-Fi/cell only, about 100 m.
   static Future<DeviceLocation?> current({
     bool requestPermission = false,
     Duration timeout = const Duration(milliseconds: 1500),
+    LocationAccuracy accuracy = LocationAccuracy.high,
   }) async {
     try {
       final platform = GeolocatorPlatform.instance;
@@ -46,7 +51,7 @@ class ProtegeyLocation {
       Position? position;
       try {
         position = await platform
-            .getCurrentPosition(locationSettings: LocationSettings(accuracy: LocationAccuracy.medium, timeLimit: timeout))
+            .getCurrentPosition(locationSettings: LocationSettings(accuracy: accuracy, timeLimit: timeout))
             .timeout(timeout);
       } catch (_) {
         position = await _lastKnown(platform);
