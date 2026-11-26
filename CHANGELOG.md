@@ -1,3 +1,8 @@
+## 0.10.0
+
+- New `DeviceLocation` (latitude, longitude, `accuracyMeters`, `capturedAt`, `isMocked`) and an optional `location` on `device.identify()` and `TransactionInput`. A transaction without one reuses the location of the customer's last `identify()` (about 15 minutes). Protegey stores it rounded to about 100 m and erases it after 12 months. It feeds four Pan Studio rule fields: `isMockLocation`, `gpsIpDistanceKm`, `impliedTravelSpeedKmh` (impossible travel) and `isNewGpsArea`.
+- The SDK still never reads the location itself and adds no dependency or permission. The new optional package `protegey_sdk_location` (in this repo) reads it with `ProtegeyLocation.current()`.
+
 ## 0.9.0
 
 Aligned with the partner API (2026-11-19).

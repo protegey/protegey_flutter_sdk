@@ -112,5 +112,23 @@ void main() {
       expect(captured!.url.path, '/partner-api/device-events');
       expect(body['deviceAttributes'], {'cpuCores': 8, 'totalMemoryMb': 4096, 'totalStorageMb': 65536, 'freeStorageMb': 1024});
     });
+
+    test('sends the location when given, and omits it otherwise', () async {
+      final bodies = <Map<String, dynamic>>[];
+      final mock = MockClient((request) async {
+        bodies.add(jsonDecode(request.body) as Map<String, dynamic>);
+        return http.Response(jsonEncode(_successBody), 201);
+      });
+      final device = DeviceModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
+
+      await device.identify(
+        visitorId: 'v1',
+        location: DeviceLocation(latitude: 5.3599, longitude: -4.0083, accuracyMeters: 25, capturedAt: DateTime.utc(2026, 11, 26, 10), isMocked: false),
+      );
+      await device.identify(visitorId: 'v1');
+
+      expect(bodies[0]['location'], {'latitude': 5.3599, 'longitude': -4.0083, 'accuracyMeters': 25.0, 'capturedAt': '2026-11-26T10:00:00.000Z', 'isMocked': false});
+      expect(bodies[1].containsKey('location'), isFalse);
+    });
   });
 }

@@ -113,6 +113,33 @@ class DeviceAttributes {
       };
 }
 
+/// The device's GPS position, as your app read it. The SDK never reads it itself, so it never
+/// needs a location permission: get it from the optional `protegey_sdk_location` package, or from
+/// your own location code. Protegey stores it rounded to about 100 m and erases it after 12 months.
+class DeviceLocation {
+  final double latitude;
+  final double longitude;
+
+  /// Accuracy radius reported by the OS, in meters.
+  final double? accuracyMeters;
+
+  /// When the OS took this position — a cached position can be minutes old.
+  final DateTime? capturedAt;
+
+  /// The OS reports a mock-location provider (Android only; always false on iOS).
+  final bool? isMocked;
+
+  const DeviceLocation({required this.latitude, required this.longitude, this.accuracyMeters, this.capturedAt, this.isMocked});
+
+  Map<String, dynamic> toJson() => {
+        'latitude': latitude,
+        'longitude': longitude,
+        if (accuracyMeters != null) 'accuracyMeters': accuracyMeters,
+        if (capturedAt != null) 'capturedAt': capturedAt!.toUtc().toIso8601String(),
+        if (isMocked != null) 'isMocked': isMocked,
+      };
+}
+
 enum DeviceAction { allow, softChallenge, hardChallenge, block }
 
 /// Every status/decision/action-like field on partner-api moved to UPPER_SNAKE_CASE on
@@ -232,6 +259,10 @@ class TransactionInput {
   final DeviceAttributes? deviceAttributes;
   final String? devicePhoneNumber;
 
+  /// The device's GPS position, if your app has it — see [DeviceLocation]. Omit to let Protegey
+  /// reuse the one sent with this customer's last [DeviceModule.identify] (~15 minutes).
+  final DeviceLocation? location;
+
   /// When this customer's login password was last changed, if you track it — lets a Pan Studio
   /// rule flag a large transaction shortly after a credential change (a classic account-takeover
   /// pattern). Omit if unknown; the corresponding rule field then simply never fires — Protegey
@@ -270,6 +301,7 @@ class TransactionInput {
     this.visitorId,
     this.deviceAttributes,
     this.devicePhoneNumber,
+    this.location,
     this.lastPasswordChangeAt,
     this.lastEmailChangeAt,
     this.lastPhoneChangeAt,
@@ -296,6 +328,7 @@ class TransactionInput {
         if (visitorId != null) 'visitorId': visitorId,
         if (deviceAttributes != null) 'deviceAttributes': deviceAttributes!.toJson(),
         if (devicePhoneNumber != null) 'devicePhoneNumber': devicePhoneNumber,
+        if (location != null) 'location': location!.toJson(),
         if (lastPasswordChangeAt != null) 'lastPasswordChangeAt': lastPasswordChangeAt!.toUtc().toIso8601String(),
         if (lastEmailChangeAt != null) 'lastEmailChangeAt': lastEmailChangeAt!.toUtc().toIso8601String(),
         if (lastPhoneChangeAt != null) 'lastPhoneChangeAt': lastPhoneChangeAt!.toUtc().toIso8601String(),

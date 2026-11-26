@@ -182,6 +182,30 @@ void main() {
       expect(body2.containsKey('accountBalanceBefore'), isFalse);
     });
 
+    test('passes location through when given, omits it otherwise', () async {
+      http.Request? captured;
+      final mock = MockClient((request) async {
+        captured = request;
+        return http.Response(jsonEncode(_successBody), 200);
+      });
+      final transactions = TransactionsModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
+
+      await transactions.report(const TransactionInput(
+        externalTransactionId: 'tx-1',
+        externalCustomerId: 'cust-1',
+        direction: TransactionDirection.debit,
+        amount: 1000,
+        transactionType: 'cashout',
+        location: DeviceLocation(latitude: 14.7167, longitude: -17.4677, isMocked: true),
+      ));
+      final body = jsonDecode(captured!.body) as Map<String, dynamic>;
+      expect(body['location'], {'latitude': 14.7167, 'longitude': -17.4677, 'isMocked': true});
+
+      await transactions.report(_baseInput());
+      final body2 = jsonDecode(captured!.body) as Map<String, dynamic>;
+      expect(body2.containsKey('location'), isFalse);
+    });
+
     test('passes customerName through when given, omits it otherwise', () async {
       http.Request? captured;
       final mock = MockClient((request) async {

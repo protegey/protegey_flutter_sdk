@@ -20,12 +20,15 @@ class DeviceModule {
   /// [phoneNumber] is never read off the device — pass your own customer's phone number if you
   /// already have it (the SDK stores it encrypted, never in the clear).
   /// [eventId] is your own idempotency key for this event — defaults to a fresh random id.
+  /// [location] is the device's GPS position, if your app has it — see [DeviceLocation]. A
+  /// transaction reported for the same customer within ~15 minutes reuses it.
   Future<IdentifyResult> identify({
     String? externalCustomerId,
     String? phoneNumber,
     String? visitorId,
     DeviceAttributes? deviceAttributes,
     String? eventId,
+    DeviceLocation? location,
   }) async {
     final computed = visitorId != null
         ? (visitorId: visitorId, attributes: const DeviceAttributes())
@@ -38,6 +41,7 @@ class DeviceModule {
       'visitorId': computed.visitorId,
       'deviceAttributes': attributes.toJson(),
       if (phoneNumber != null) 'phoneNumber': phoneNumber,
+      if (location != null) 'location': location.toJson(),
     });
 
     return IdentifyResult(

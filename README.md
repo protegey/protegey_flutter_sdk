@@ -182,10 +182,28 @@ through `device_info_plus`; pass your own via `visitorId` if you need one.
 `connectionType`/`isVpnActive` (via `connectivity_plus`), `batteryLevel`/`isCharging` (via
 `battery_plus`). Deliberately NOT collected: mobile carrier/MCC-MNC (unreliable without a
 sensitive Android permission, heavily restricted on iOS), CPU/RAM/storage (no already-adopted,
-well-maintained plugin exposes them), GPS location, and the advertising identifier (IDFA/AAID) —
+well-maintained plugin exposes them), GPS location (see "Device location" below), and the advertising identifier (IDFA/AAID) —
 the latter would require the iOS App Tracking Transparency prompt for no proportionate fraud-signal
 gain. Every enrichment call is independently best-effort: a plugin failure never breaks
 `identify()`, the field is just omitted.
+
+## Device location (optional)
+
+The SDK never reads the GPS position itself, so it never needs a location permission. If your app
+has the position, pass it as a `DeviceLocation` and Protegey uses it to flag a fake GPS position, a
+GPS position far from the IP address, impossible travel and a never-seen area:
+
+```dart
+await protegey.device.identify(
+  externalCustomerId: 'cust-1',
+  location: DeviceLocation(latitude: 5.3599, longitude: -4.0083, accuracyMeters: 25),
+);
+```
+
+To read it, install the optional [`protegey_sdk_location`](protegey_sdk_location/README.md) package
+(`ProtegeyLocation.current()`), or use your own location code. A transaction reported within about
+15 minutes reuses the location of the customer's last `identify()`. Protegey stores it rounded to
+about 100 m and erases it after 12 months.
 
 ## Development
 
