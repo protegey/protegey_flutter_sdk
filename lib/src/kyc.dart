@@ -4,14 +4,22 @@ import 'types.dart';
 class StartKycSessionResult {
   final String sessionId;
 
-  /// Hosted Protegey identity verification link — single-use, valid for 30 minutes. Send it to your user however
+  /// Hosted Protegey identity verification link — single-use, valid until [expiresAt]. Send it to your user however
   /// you like (SMS, email, in-app), or let `presentVerification()` open it.
   final String url;
 
-  const StartKycSessionResult({required this.sessionId, required this.url});
+  /// When [url] stops working — your link-lifetime setting in the portal's KYC settings (24 h by
+  /// default, from 30 minutes to 7 days). Null with a backend that doesn't return it yet.
+  final DateTime? expiresAt;
+
+  const StartKycSessionResult({required this.sessionId, required this.url, this.expiresAt});
 
   factory StartKycSessionResult.fromJson(Map<String, dynamic> json) {
-    return StartKycSessionResult(sessionId: json['sessionId'] as String, url: json['url'] as String);
+    return StartKycSessionResult(
+      sessionId: json['sessionId'] as String,
+      url: json['url'] as String,
+      expiresAt: DateTime.tryParse(json['expiresAt']?.toString() ?? ''),
+    );
   }
 }
 
@@ -113,6 +121,14 @@ class KycSessionStatus {
   final String sessionId;
   final String? externalUserId;
 
+  /// The KYB applicant this identity check was requested for (from the portal or
+  /// `POST /partner-api/kyb/applicants/{clientId}/kyc-sessions`); null for a plain KYC session.
+  final String? kybClientId;
+
+  /// KYB-linked session only: 'MATCH' or 'MISMATCH' between the name read on the ID document and
+  /// the name the KYB declared; null for a plain session or before a result.
+  final String? kybNameMatch;
+
   /// UPPER_SNAKE_CASE on the wire: 'NOT_STARTED' | 'IN_PROGRESS' | 'AWAITING_USER' | 'IN_REVIEW' |
   /// 'APPROVED' | 'DECLINED' | 'RESUBMITTED' | 'ABANDONED' | 'EXPIRED' | 'KYC_EXPIRED'. In practice
   /// a verification session goes IN_PROGRESS → APPROVED / IN_REVIEW / DECLINED.
@@ -172,6 +188,8 @@ class KycSessionStatus {
   const KycSessionStatus({
     required this.sessionId,
     required this.externalUserId,
+    this.kybClientId,
+    this.kybNameMatch,
     required this.status,
     required this.outcome,
     this.recommendation,
@@ -192,6 +210,8 @@ class KycSessionStatus {
     return KycSessionStatus(
       sessionId: json['sessionId'] as String,
       externalUserId: json['externalUserId'] as String?,
+      kybClientId: json['kybClientId'] as String?,
+      kybNameMatch: json['kybNameMatch'] as String?,
       status: json['status'] as String,
       outcome: _kycOutcomeFromJson(json['outcome'] as String?),
       recommendation: _kycRecommendationFromJson(json['recommendation']),
@@ -215,6 +235,9 @@ class KycSessionSummary {
   final String sessionId;
   final String? externalUserId;
 
+  /// See [KycSessionStatus.kybClientId].
+  final String? kybClientId;
+
   /// UPPER_SNAKE_CASE, same values as [KycSessionStatus.status].
   final String status;
   final KycOutcome outcome;
@@ -228,6 +251,7 @@ class KycSessionSummary {
   const KycSessionSummary({
     required this.sessionId,
     required this.externalUserId,
+    this.kybClientId,
     required this.status,
     required this.outcome,
     this.recommendation,
@@ -242,6 +266,7 @@ class KycSessionSummary {
     return KycSessionSummary(
       sessionId: json['sessionId'] as String,
       externalUserId: json['externalUserId'] as String?,
+      kybClientId: json['kybClientId'] as String?,
       status: json['status'] as String,
       outcome: _kycOutcomeFromJson(json['outcome'] as String?),
       recommendation: _kycRecommendationFromJson(json['recommendation']),

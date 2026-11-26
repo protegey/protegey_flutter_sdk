@@ -1,5 +1,7 @@
 ## 0.10.0
 
+- KYC: `StartKycSessionResult.expiresAt`. The capture link is no longer fixed at 30 minutes: it lasts as long as the partner's link-lifetime setting in the portal's KYC settings (24 h by default, from 30 minutes to 7 days).
+- KYC: `KycSessionStatus.kybClientId` / `kybNameMatch` and `KycSessionSummary.kybClientId`, set when the identity check was requested from a KYB application (`kybNameMatch` is MATCH or MISMATCH between the name on the ID document and the name the KYB declared).
 - New `DeviceLocation` (latitude, longitude, `accuracyMeters`, `capturedAt`, `isMocked`) and an optional `location` on `device.identify()` and `TransactionInput`. A transaction without one reuses the location of the customer's last `identify()` (about 15 minutes). Protegey stores it rounded to about 100 m and erases it after 12 months. It feeds four Pan Studio rule fields: `isMockLocation`, `gpsIpDistanceKm`, `impliedTravelSpeedKmh` (impossible travel) and `isNewGpsArea`.
 - `ReportTransactionResult.location` (`TransactionLocation`): the position Protegey used for the transaction (rounded) and the signals derived from it, or null when it had none.
 - The SDK still never reads the location itself and adds no dependency or permission. The new optional package `protegey_sdk_location` (in this repo) reads it with `ProtegeyLocation.current()` (high accuracy by default; `accuracy: LocationAccuracy.medium` saves battery).

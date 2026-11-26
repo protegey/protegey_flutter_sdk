@@ -34,6 +34,33 @@ void main() {
       expect(result.sessionId, 'sess_abc');
       expect(result.url, 'https://capture.example.com/?enrollmentId=abc&token=t');
     });
+
+    test('parses expiresAt when the backend returns it', () async {
+      final mock = MockClient((request) async => http.Response(
+            jsonEncode({'sessionId': 'sess_abc', 'url': 'https://capture.example.com/?t=1', 'expiresAt': '2026-11-27T15:00:00.000Z'}),
+            200,
+          ));
+      final kyc = KycModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
+
+      final result = await kyc.startSession(externalUserId: 'cust-1');
+
+      expect(result.expiresAt, DateTime.utc(2026, 11, 27, 15));
+    });
+  });
+
+  group('KYB-linked sessions', () {
+    test('getSession exposes kybClientId and kybNameMatch', () async {
+      final mock = MockClient((request) async => http.Response(
+            jsonEncode({'sessionId': 'sess_1', 'externalUserId': null, 'kybClientId': 'client_1', 'kybNameMatch': 'MATCH', 'status': 'APPROVED', 'decision': null}),
+            200,
+          ));
+      final kyc = KycModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
+
+      final result = await kyc.getSession('sess_1');
+
+      expect(result.kybClientId, 'client_1');
+      expect(result.kybNameMatch, 'MATCH');
+    });
   });
 
   group('KycModule.getSession', () {
