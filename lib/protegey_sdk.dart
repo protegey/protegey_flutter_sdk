@@ -23,7 +23,8 @@ export 'src/kyc.dart'
         KycRecommendation,
         KycReviewStatus,
         KycImage,
-        KycImages;
+        KycImages,
+        KycGroupPresence;
 export 'src/cash_deposits.dart' show CashDepositsModule, CashDepositInput, RecordCashDepositResult, CashDeposit;
 export 'src/kyc_webview.dart' show ProtegeyKycView, ProtegeyKycPresentation;
 export 'src/liveness.dart'

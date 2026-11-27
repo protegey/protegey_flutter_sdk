@@ -1,3 +1,8 @@
+## 0.11.0
+
+- `protegey_sdk_location` 0.2.0: `protegey.location.update(externalCustomerId: ...)` (an extension on `Protegey`, so the core SDK still has no location dependency). It reads the position like `ProtegeyLocation.current()` and, if there is one, sends it with `device.identify(externalCustomerId:, location:)`. It never throws and returns the `DeviceLocation` it sent, or null (no position, permission refused, error). Call it at app start / resume and right before a payment: a transaction your backend reports server-to-server for the same customer within about 15 minutes reuses that position. `ProtegeyLocation.current()` is unchanged.
+- KYC: `KycSessionStatus.groupPresence` (`List<KycGroupPresence>?`: `entity`, `status`, `createdAt`, `matchedOn`), for partner groups: the same person already has a KYC at another entity of your group. Null when there is none, outside a group, or with a backend that doesn't return it. For a group, `decision['identityResolution']['networkFlag']['groupEntities']` names the entities of your own group that reported the person.
+
 ## 0.10.0
 
 - KYC: `StartKycSessionResult.expiresAt`. The capture link is no longer fixed at 30 minutes: it lasts as long as the partner's link-lifetime setting in the portal's KYC settings (24 h by default, from 30 minutes to 7 days).

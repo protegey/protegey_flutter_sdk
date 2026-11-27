@@ -63,6 +63,43 @@ void main() {
     });
   });
 
+  group('partner groups', () {
+    test('getSession parses groupPresence', () async {
+      final mock = MockClient((request) async => http.Response(
+            jsonEncode({
+              'sessionId': 'sess_1',
+              'externalUserId': 'cust-1',
+              'status': 'IN_REVIEW',
+              'decision': null,
+              'groupPresence': [
+                {'entity': 'Sample Pay Senegal', 'status': 'APPROVED', 'createdAt': '2026-03-02T10:00:00.000Z', 'matchedOn': ['FACE', 'GOVERNMENT_ID']},
+              ],
+            }),
+            200,
+          ));
+      final kyc = KycModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
+
+      final presence = (await kyc.getSession('sess_1')).groupPresence!.single;
+
+      expect(presence.entity, 'Sample Pay Senegal');
+      expect(presence.status, 'APPROVED');
+      expect(presence.createdAt, DateTime.utc(2026, 3, 2, 10));
+      expect(presence.matchedOn, ['FACE', 'GOVERNMENT_ID']);
+    });
+
+    test('groupPresence is null when absent or null', () async {
+      for (final body in [
+        {'sessionId': 'sess_1', 'status': 'APPROVED', 'decision': null},
+        {'sessionId': 'sess_1', 'status': 'APPROVED', 'decision': null, 'groupPresence': null},
+      ]) {
+        final mock = MockClient((request) async => http.Response(jsonEncode(body), 200));
+        final kyc = KycModule(ProtegeyHttpClient('key', baseUrl: 'https://api.example.com', httpClient: mock));
+
+        expect((await kyc.getSession('sess_1')).groupPresence, isNull);
+      }
+    });
+  });
+
   group('KycModule.getSession', () {
     test('GETs /partner-api/kyc/sessions/:sessionId — the webhook polling fallback', () async {
       http.Request? captured;

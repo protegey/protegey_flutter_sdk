@@ -101,6 +101,42 @@ class KycImages {
   }
 }
 
+/// One entry of [KycSessionStatus.groupPresence]: the same person already has a KYC at another
+/// entity of your partner group.
+class KycGroupPresence {
+  /// The sister entity's name.
+  final String entity;
+
+  /// Its KYC status there, UPPER_SNAKE_CASE (same values as [KycSessionStatus.status]).
+  final String status;
+
+  /// When that KYC was started.
+  final DateTime? createdAt;
+
+  /// What matched: 'FACE', 'GOVERNMENT_ID', 'PHONE', 'EMAIL'.
+  final List<String> matchedOn;
+
+  const KycGroupPresence({required this.entity, required this.status, this.createdAt, this.matchedOn = const []});
+
+  static List<KycGroupPresence>? listFromJson(Object? json) {
+    if (json is! List) return null;
+    return [
+      for (final item in json)
+        if (item is Map<String, dynamic> && item['entity'] is String)
+          KycGroupPresence(
+            entity: item['entity'] as String,
+            status: item['status']?.toString() ?? '',
+            createdAt: DateTime.tryParse(item['createdAt']?.toString() ?? ''),
+            matchedOn: [
+              if (item['matchedOn'] is List)
+                for (final m in item['matchedOn'] as List)
+                  if (m is String) m,
+            ],
+          ),
+    ];
+  }
+}
+
 /// Status values accepted by [KycModule.updateSession].
 enum KycReviewStatus { approved, declined, inReview }
 
@@ -145,7 +181,15 @@ class KycSessionStatus {
 
   /// The verification decision blob. A manual override adds `decision['manualReview']`
   /// (`reviewedBy`, `reviewedAt`, `previousStatus`, `newStatus` — both UPPER_SNAKE_CASE — and `note`).
+  /// For a partner group, `decision['identityResolution']['networkFlag']['groupEntities']` lists the
+  /// entities of your own group that reported this person (the public network stays anonymous).
   final Map<String, dynamic>? decision;
+
+  /// Partner groups only: the same person already has a KYC at other entities of your group
+  /// (matched by face, ID number, phone or email). Information for your reviewer — being a client
+  /// of two sister entities is normal. Null when there is none, when you are in no group, or for a
+  /// response without it (e.g. [KycModule.updateSession]).
+  final List<KycGroupPresence>? groupPresence;
 
   /// The verified user's full name, as read off their scanned ID document — null until the
   /// verification has produced a result.
@@ -194,6 +238,7 @@ class KycSessionStatus {
     required this.outcome,
     this.recommendation,
     required this.decision,
+    this.groupPresence,
     this.fullName,
     this.documentType,
     this.country,
@@ -216,6 +261,7 @@ class KycSessionStatus {
       outcome: _kycOutcomeFromJson(json['outcome'] as String?),
       recommendation: _kycRecommendationFromJson(json['recommendation']),
       decision: json['decision'] as Map<String, dynamic>?,
+      groupPresence: KycGroupPresence.listFromJson(json['groupPresence']),
       fullName: json['fullName'] as String?,
       documentType: json['documentType'] as String?,
       country: json['country'] as String?,
