@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator_platform_interface/geolocator_platform_interface.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:protegey_sdk/protegey_sdk.dart' show Protegey;
 import 'package:protegey_sdk_location/protegey_sdk_location.dart';
 
 class _FakeGeolocator extends GeolocatorPlatform with MockPlatformInterfaceMixin {
@@ -110,5 +114,56 @@ void main() {
     fake.lastKnown = null;
 
     expect(await ProtegeyLocation.current(), isNull);
+  });
+
+  group('protegey.location.update', () {
+    late List<Map<String, dynamic>> sent;
+    late Protegey protegey;
+
+    Protegey client({int statusCode = 200}) => Protegey(
+          apiKey: 'key',
+          baseUrl: 'https://api.example.com',
+          httpClient: MockClient((request) async {
+            sent.add(jsonDecode(request.body) as Map<String, dynamic>);
+            return http.Response(jsonEncode({'recorded': true, 'action': 'ALLOW', 'riskScore': 0}), statusCode);
+          }),
+        );
+
+    setUp(() {
+      sent = [];
+      protegey = client();
+    });
+
+    test('reads the position and sends it with device.identify', () async {
+      final location = await protegey.location.update(externalCustomerId: 'cust-1');
+
+      expect(location!.latitude, 5.3599);
+      expect(sent.single['externalCustomerId'], 'cust-1');
+      expect(sent.single['location'], location.toJson());
+    });
+
+    test('sends nothing and returns null when the permission is not granted', () async {
+      fake.permission = LocationPermission.denied;
+
+      expect(await protegey.location.update(externalCustomerId: 'cust-1'), isNull);
+      expect(fake.permissionRequests, 0);
+      expect(sent, isEmpty);
+    });
+
+    test('asks for the permission only when requestPermission is true', () async {
+      fake.permission = LocationPermission.denied;
+      fake.permissionAfterRequest = LocationPermission.deniedForever;
+
+      expect(await protegey.location.update(externalCustomerId: 'cust-1', requestPermission: true), isNull);
+      expect(fake.permissionRequests, 1);
+      expect(sent, isEmpty);
+    });
+
+    test('returns null instead of throwing when the identify call fails', () async {
+      protegey = client(statusCode: 500);
+
+      expect(await protegey.location.update(externalCustomerId: 'cust-1'), isNull);
+      expect(sent, hasLength(1));
+    });
   });
 }

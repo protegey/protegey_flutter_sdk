@@ -34,7 +34,29 @@ dependencies:
 Apple requires this key as soon as the app contains location code, even if it never asks. Write
 the text in your own words and languages; it is shown in the system prompt.
 
-## Use
+## Keep Protegey up to date (one call)
+
+In production your backend reports transactions server-to-server, so the app's only job is to
+keep Protegey up to date with the customer's last device position:
+
+```dart
+import 'package:protegey_sdk_location/protegey_sdk_location.dart';
+
+// At app start / resume, and right before a payment:
+unawaited(protegey.location.update(externalCustomerId: 'cust-1'));
+```
+
+- It reads the position (same rules as `ProtegeyLocation.current()` below) and, if there is one,
+  sends it with `device.identify(externalCustomerId:, location:)`.
+- **Silent.** No UI is shown. By default it never shows the permission prompt
+  (`requestPermission: false`); when the permission is refused there is simply no position.
+- **Never throws, never blocks.** It returns the `DeviceLocation` it sent, or `null` when there was
+  none or the call failed. You don't need to await it.
+- **Your backend's transactions reuse it.** A transaction reported server-to-server for the same
+  customer within about 15 minutes uses this position — nothing to relay.
+- `timeout` and `accuracy` work as for `current()`.
+
+## Read the position yourself
 
 ```dart
 import 'package:protegey_sdk_location/protegey_sdk_location.dart';

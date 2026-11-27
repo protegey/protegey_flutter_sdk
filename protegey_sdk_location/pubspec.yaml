@@ -3,7 +3,7 @@ description: >
   Optional GPS add-on for the Protegey Flutter SDK — reads the device position for
   device.identify() and transactions.report(). Only apps that install it declare a location
   permission.
-version: 0.1.0
+version: 0.2.0
 homepage: https://github.com/protegey/protegey_flutter_sdk
 publish_to: none # flip once ready to publish to pub.dev
 
@@ -23,4 +23,5 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: '>=3.0.0 <5.0.0'
   geolocator_platform_interface: any
+  http: any
   plugin_platform_interface: any

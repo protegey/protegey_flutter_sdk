@@ -201,7 +201,8 @@ await protegey.device.identify(
 ```
 
 To read it, install the optional [`protegey_sdk_location`](protegey_sdk_location/README.md) package
-(`ProtegeyLocation.current()`), or use your own location code. A transaction reported within about
+(`protegey.location.update(externalCustomerId: ...)` reads and sends it in one call;
+`ProtegeyLocation.current()` only reads it), or use your own location code. A transaction reported within about
 15 minutes reuses the location of the customer's last `identify()`. Protegey stores it rounded to
 about 100 m and erases it after 12 months.
 

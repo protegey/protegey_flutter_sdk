@@ -1,6 +1,10 @@
 /// Optional GPS add-on for the Protegey Flutter SDK.
 ///
 /// ```dart
+/// // One call: reads the position and sends it with device.identify().
+/// await protegey.location.update(externalCustomerId: 'cust-1');
+///
+/// // Or, in two steps:
 /// final location = await ProtegeyLocation.current();
 /// await protegey.device.identify(externalCustomerId: 'cust-1', location: location);
 /// ```
@@ -77,4 +81,42 @@ class ProtegeyLocation {
         capturedAt: position.timestamp,
         isMocked: position.isMocked,
       );
+}
+
+/// Adds `protegey.location` to the core client. Import `protegey_sdk_location` to use it.
+extension ProtegeyLocationClient on Protegey {
+  /// Keeps Protegey up to date with the customer's last device position.
+  ProtegeyLocationUpdater get location => ProtegeyLocationUpdater._(this);
+}
+
+/// See [ProtegeyLocationUpdater.update].
+class ProtegeyLocationUpdater {
+  final Protegey _protegey;
+
+  const ProtegeyLocationUpdater._(this._protegey);
+
+  /// Reads the device position (same rules as [ProtegeyLocation.current]) and, when there is one,
+  /// sends it with `device.identify(externalCustomerId:, location:)`.
+  ///
+  /// Returns the [DeviceLocation] it sent, or `null` when there was none (location off,
+  /// permission not granted or refused, no fix) or the call failed. It never throws, so you can
+  /// call it without awaiting (`unawaited(protegey.location.update(...))`) and carry on.
+  ///
+  /// Call it at app start / resume and right before a payment: a transaction your backend
+  /// reports for the same customer within about 15 minutes reuses this position.
+  Future<DeviceLocation?> update({
+    required String externalCustomerId,
+    bool requestPermission = false,
+    Duration timeout = const Duration(milliseconds: 1500),
+    LocationAccuracy accuracy = LocationAccuracy.high,
+  }) async {
+    try {
+      final location = await ProtegeyLocation.current(requestPermission: requestPermission, timeout: timeout, accuracy: accuracy);
+      if (location == null) return null;
+      await _protegey.device.identify(externalCustomerId: externalCustomerId, location: location);
+      return location;
+    } catch (_) {
+      return null;
+    }
+  }
 }
